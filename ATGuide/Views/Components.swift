@@ -1,4 +1,24 @@
 import SwiftUI
+import UIKit
+
+extension Color {
+    /// Supporting text that stays at least 4.5:1 against system backgrounds.
+    /// The system secondary label is about 2.8:1, which fails the contrast audit.
+    static let supportingText = Color(uiColor: UIColor { traits in
+        if traits.userInterfaceStyle == .dark {
+            return UIColor(white: 0.80, alpha: 1)
+        }
+        return UIColor(red: 0.25, green: 0.25, blue: 0.27, alpha: 1)
+    })
+}
+
+extension View {
+    /// Interactive controls need a 44 by 44 point target.
+    func minimumTapTarget() -> some View {
+        frame(minWidth: 44, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+    }
+}
 
 // MARK: Navigation
 
@@ -76,14 +96,17 @@ struct DeviceRow: View {
                         .font(.subheadline.weight(.semibold))
                 }
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(device.name).font(.body.weight(.semibold))
+                    Text(device.name)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     if favorites.contains(FavoriteKey.device(device.id)) {
                         FavoriteMark()
                     }
                 }
                 Text([device.category, store.companyName(device.company), device.releasedText].joined(separator: ", "))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.supportingText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
@@ -101,14 +124,17 @@ struct CompanyRow: View {
         NavigationLink(value: Route.company(company.id)) {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(company.name).font(.body.weight(.semibold))
+                    Text(company.name)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     if favorites.contains(FavoriteKey.company(company.id)) {
                         FavoriteMark()
                     }
                 }
                 Text("Founded \(company.founded.nonEmpty ?? notDocumented), \(count) \(count == 1 ? "product" : "products")")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.supportingText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
@@ -125,14 +151,17 @@ struct OSRow: View {
         NavigationLink(value: Route.os(os.id)) {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(os.name).font(.body.weight(.semibold))
+                    Text(os.name)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     if favorites.contains(FavoriteKey.os(os.id)) {
                         FavoriteMark()
                     }
                 }
                 Text("\(store.companyName(os.company)), \(os.versions.count) versions listed")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.supportingText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
@@ -144,7 +173,7 @@ struct OSRow: View {
 struct FavoriteMark: View {
     var body: some View {
         Image(systemName: "star.fill")
-            .imageScale(.small)
+            .font(.body)
             .accessibilityLabel("Favorite")
     }
 }
@@ -168,6 +197,7 @@ struct FavoriteButton: View {
         .accessibilityLabel("Favorite")
         .accessibilityAddTraits(isOn ? .isSelected : [])
         .accessibilityHint(isOn ? "Removes \(name) from Favorites." : "Adds \(name) to Favorites.")
+        .minimumTapTarget()
     }
 }
 
@@ -192,6 +222,7 @@ struct CompareButton: View {
         .accessibilityHint(!isIn && compare.isFull
                            ? "Compare already has three devices. Remove one in the Compare tab first."
                            : (isIn ? "Takes \(device.name) out of the comparison." : "Puts \(device.name) in the Compare tab, next to up to two other devices."))
+        .minimumTapTarget()
     }
 }
 
@@ -206,6 +237,7 @@ struct ShareTextButton: View {
             Label("Share as TXT", systemImage: "square.and.arrow.up")
         }
         .accessibilityHint("Shares or saves this entry as a plain text file.")
+        .minimumTapTarget()
     }
 }
 
@@ -225,6 +257,8 @@ struct DetailSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.title2.weight(.bold))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             content
         }
@@ -250,8 +284,8 @@ struct LabeledFact: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.subheadline.weight(.semibold))
-            Text(value).font(.body).fixedSize(horizontal: false, vertical: true)
+            Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+            Text(value).font(.body).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
@@ -293,6 +327,7 @@ struct EntryLinks: View {
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .minimumTapTarget()
                 }
             }
         }
@@ -312,8 +347,10 @@ struct SourceList: View {
                         Link(destination: url) {
                             Text("Source \(i + 1): \(url.host ?? source)")
                                 .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityHint("Opens \(source) in your web browser.")
+                        .minimumTapTarget()
                     } else {
                         BodyText("Source \(i + 1): \(source)")
                     }

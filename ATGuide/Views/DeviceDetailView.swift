@@ -19,11 +19,13 @@ struct DeviceDetailView: View {
                         .accessibilityAddTraits(.isHeader)
                     Text("\(device.category), \(companyName), \(device.releasedText)")
                         .font(.title3)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
                         .fixedSize(horizontal: false, vertical: true)
                     NavigationLink(value: Route.company(device.company)) {
                         Text("About \(companyName)")
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .minimumTapTarget()
                     ViewThatFits(in: .horizontal) {
                         HStack(spacing: 12) { actionButtons }
                         VStack(alignment: .leading, spacing: 12) { actionButtons }
@@ -81,9 +83,14 @@ struct DeviceDetailView: View {
                     BodyText(store.operatingSystemText(device))
                     let histories = store.osHistories(forDevice: device.id)
                     if !histories.isEmpty {
-                        Text("Operating system history").font(.headline)
+                        Text("Operating system history")
+                            .font(.headline)
+                            .accessibilityAddTraits(.isHeader)
                         ForEach(histories) { os in
-                            NavigationLink(value: Route.os(os.id)) { Text(os.name) }
+                            NavigationLink(value: Route.os(os.id)) {
+                                Text(os.name).fixedSize(horizontal: false, vertical: true)
+                            }
+                            .minimumTapTarget()
                         }
                     }
                 }

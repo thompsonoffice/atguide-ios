@@ -1,9 +1,5 @@
 import SwiftUI
 
-/// The data store never changes after launch, so it only needs to be
-/// an ObservableObject to travel through the SwiftUI environment.
-extension ATGuideStore: ObservableObject {}
-
 @main
 struct ATGuideApp: App {
     @StateObject private var favorites: FavoritesStore

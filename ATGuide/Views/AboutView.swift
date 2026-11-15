@@ -33,6 +33,7 @@ struct AboutView: View {
                 DetailSection("Privacy") {
                     BodyText("ATGuide works offline and collects no data. Favorites, recently viewed entries and comparisons stay on this device.")
                     NavigationLink("Read the privacy policy", value: Route.privacy)
+                        .minimumTapTarget()
                 }
                 LabeledFact(label: "Developer", value: "Hunter Thompson")
                 LabeledFact(label: "Version", value: version)

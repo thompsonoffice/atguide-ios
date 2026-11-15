@@ -10,6 +10,8 @@ struct OSHistoryListView: View {
             } header: {
                 Text("\(store.osHistories.count) operating system and software version histories.")
                     .textCase(nil)
+                    .foregroundStyle(Color.supportingText)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
         .navigationTitle("OS History")
@@ -33,10 +35,13 @@ struct OSDetailView: View {
                         .accessibilityAddTraits(.isHeader)
                     Text("\(companyName), \(os.versions.count) versions listed")
                         .font(.title3)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
                     NavigationLink(value: Route.company(os.company)) {
                         Text("About \(companyName)")
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .minimumTapTarget()
                     ViewThatFits(in: .horizontal) {
                         HStack(spacing: 16) { actionButtons }
                         VStack(alignment: .leading, spacing: 12) { actionButtons }
@@ -73,7 +78,9 @@ struct OSDetailView: View {
                         NavigationLink(value: Route.device(d.id)) {
                             Text("\(d.name) (\(store.companyName(d.company)), \(d.releasedText))")
                                 .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
+                        .minimumTapTarget()
                     }
                 }
 

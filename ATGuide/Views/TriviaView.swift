@@ -32,7 +32,8 @@ struct TriviaRow: View {
                     BodyText(fact.text)
                     Text("About \(device.name)")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.vertical, 2)
                 .accessibilityElement(children: .combine)

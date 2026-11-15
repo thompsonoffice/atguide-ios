@@ -57,7 +57,9 @@ struct SectionHeader: View {
     var body: some View {
         Text(title)
             .font(.headline)
+            .foregroundStyle(.primary)
             .textCase(nil)
+            .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
     }
 }

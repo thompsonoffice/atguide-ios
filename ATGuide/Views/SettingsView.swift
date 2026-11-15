@@ -66,6 +66,7 @@ struct SettingsView: View {
                 SectionHeader("Text")
             } footer: {
                 Text("Every screen uses Dynamic Type. Use iPhone setting follows Settings, Accessibility, Display and Text Size.")
+                    .foregroundStyle(Color.supportingText)
             }
 
             Section {
@@ -79,6 +80,7 @@ struct SettingsView: View {
                 SectionHeader("Saved on This Device")
             } footer: {
                 Text("Favorites, recently viewed entries and the comparison are stored only on this iPhone. Nothing is sent anywhere.")
+                    .foregroundStyle(Color.supportingText)
             }
         }
         .navigationTitle("Settings")

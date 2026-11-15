@@ -18,7 +18,8 @@ struct CompareView: View {
                 Section {
                     if picked.isEmpty {
                         Text("Pick two or three devices to compare their specs side by side. Use Add Device below, or the Add to Compare button on any device page.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.supportingText)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(Array(picked.enumerated()), id: \.element.id) { index, device in
                         HStack(alignment: .firstTextBaseline) {
@@ -26,7 +27,9 @@ struct CompareView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Device \(index + 1): \(device.name)").font(.body.weight(.semibold))
                                     Text("\(store.companyName(device.company)), \(device.releasedText)")
-                                        .font(.subheadline).foregroundStyle(.secondary)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.supportingText)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                                 .accessibilityElement(children: .combine)
                             }
@@ -58,6 +61,7 @@ struct CompareView: View {
                         Toggle("Show only differences", isOn: $differencesOnly)
                     } footer: {
                         Text("\(shown.count) of \(rows.count) facts shown.")
+                            .foregroundStyle(Color.supportingText)
                     }
                     ForEach(shown) { row in
                         Section {
@@ -70,7 +74,8 @@ struct CompareView: View {
                     }
                 } else if picked.count == 1 {
                     Text("Add one or two more devices to see the comparison.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .navigationTitle("Compare")
@@ -103,14 +108,19 @@ struct ComparePickerView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(device.name).font(.body.weight(.semibold))
                                 Text([device.category, store.companyName(device.company), device.releasedText].joined(separator: ", "))
-                                    .font(.subheadline).foregroundStyle(.secondary)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.supportingText)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             .accessibilityElement(children: .combine)
                         }
                         .foregroundStyle(.primary)
                     }
                 } header: {
-                    Text("\(results.count) devices").textCase(nil)
+                    Text("\(results.count) devices")
+                        .textCase(nil)
+                        .foregroundStyle(Color.supportingText)
+                        .accessibilityAddTraits(.isHeader)
                 }
             }
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a device to add")

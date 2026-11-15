@@ -18,7 +18,8 @@ struct FavoritesView: View {
             List {
                 if devices.isEmpty && companies.isEmpty && oses.isEmpty {
                     Text("No favorites yet. Open any device, company or operating system and choose the Favorite button. Favorites are saved on this device only.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 if !devices.isEmpty {
                     Section {
