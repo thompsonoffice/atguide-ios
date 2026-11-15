@@ -47,8 +47,6 @@ struct CompareView: View {
                         } label: {
                             Text("Add Device")
                                 .font(.body)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .buttonStyle(.plain)
                         .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
@@ -70,14 +68,12 @@ struct CompareView: View {
                         } label: {
                             Text(differencesOnly ? "Showing only differences" : "Show only differences")
                                 .font(.body)
-                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityAddTraits(differencesOnly ? .isSelected : [])
                         .accessibilityHint("Hides facts that are the same for every picked device.")
                         Text("\(shown.count) of \(rows.count) facts shown.")
                             .font(.body)
                             .foregroundStyle(.primary)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(shown) { row in
                         Section {
@@ -96,7 +92,6 @@ struct CompareView: View {
             }
             .navigationTitle("Compare")
             .font(.body)
-            .aboveTabBar()
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()

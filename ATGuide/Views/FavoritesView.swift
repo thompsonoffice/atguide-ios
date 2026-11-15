@@ -55,15 +55,12 @@ struct FavoritesView: View {
                     NavigationLink(value: Route.recents) {
                         Text("Recently Viewed")
                             .font(.body)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
                 }
             }
             .navigationTitle("Favorites")
             .font(.body)
-            .aboveTabBar()
             .atguideDestinations()
         }
     }

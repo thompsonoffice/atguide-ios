@@ -42,11 +42,8 @@ struct OSDetailView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .minimumTapTarget()
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 16) { actionButtons }
-                        VStack(alignment: .leading, spacing: 12) { actionButtons }
-                    }
-                    .padding(.top, 4)
+                    VStack(alignment: .leading, spacing: 12) { actionButtons }
+                        .padding(.top, 4)
                 }
 
                 DetailSection("Overview") {
@@ -97,7 +94,6 @@ struct OSDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .font(.body)
-        .aboveTabBar()
         .navigationTitle(os.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.os(os.id)) }

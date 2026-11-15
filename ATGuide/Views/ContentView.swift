@@ -65,7 +65,6 @@ struct MoreView: View {
             }
             .navigationTitle("More")
             .font(.body)
-            .aboveTabBar()
             .atguideDestinations()
         }
     }

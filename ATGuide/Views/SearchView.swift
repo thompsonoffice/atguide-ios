@@ -67,7 +67,6 @@ struct SearchView: View {
             .textInputAutocapitalization(.never)
             .navigationTitle("Search")
             .font(.body)
-            .aboveTabBar()
             .atguideDestinations()
             .onChange(of: query) { _, _ in announceCount() }
             .onChange(of: category) { _, _ in announceCount() }

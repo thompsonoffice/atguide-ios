@@ -203,14 +203,11 @@ struct FavoriteButton: View {
         } label: {
             Text(isOn ? "★ Favorite" : "☆ Favorite")
                 .font(.body)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityLabel("Favorite")
         .accessibilityAddTraits(isOn ? .isSelected : [])
         .buttonStyle(.plain)
         .accessibilityHint(isOn ? "Removes \(name) from Favorites." : "Adds \(name) to Favorites.")
-        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -230,15 +227,12 @@ struct CompareButton: View {
         } label: {
             Text(isIn ? "Remove from Compare" : "Add to Compare")
                 .font(.body)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .disabled(!isIn && compare.isFull)
         .accessibilityHint(!isIn && compare.isFull
                            ? "Compare already has three devices. Remove one in the Compare tab first."
                            : (isIn ? "Takes \(device.name) out of the comparison." : "Puts \(device.name) in the Compare tab, next to up to two other devices."))
         .buttonStyle(.plain)
-        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -254,8 +248,6 @@ struct ShareTextButton: View {
         } label: {
             Text("Share as TXT")
                 .font(.body)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
         .accessibilityHint("Shares or saves this entry as a plain text file.")

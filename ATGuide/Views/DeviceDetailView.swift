@@ -26,11 +26,8 @@ struct DeviceDetailView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .minimumTapTarget()
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 12) { actionButtons }
-                        VStack(alignment: .leading, spacing: 12) { actionButtons }
-                    }
-                    .padding(.top, 4)
+                    VStack(alignment: .leading, spacing: 12) { actionButtons }
+                        .padding(.top, 4)
                 }
 
                 DetailSection("Overview") {
@@ -111,7 +108,6 @@ struct DeviceDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .font(.body)
-        .aboveTabBar()
         .navigationTitle(device.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.device(device.id)) }
