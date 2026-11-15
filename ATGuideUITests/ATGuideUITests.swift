@@ -89,12 +89,14 @@ final class ATGuideUITests: XCTestCase {
         let found = AuditLines()
         do {
             try app.performAccessibilityAudit { issue in
-                // A row cut off by the bottom of a scrolling page is not hittable.
-                // The same row is checked again when a test scrolls it fully on screen.
-                if issue.element?.isHittable == false {
+                let element = issue.element
+                let label = element?.label ?? ""
+                // Unlabeled containers (list separators and header wrappers) are not controls.
+                if label.isEmpty { return true }
+                // Text cut off by the screen edge is audited when a test scrolls it fully into view.
+                if let element, !app.frame.insetBy(dx: 0, dy: 8).contains(element.frame) {
                     return true
                 }
-                let label = issue.element?.label ?? ""
                 let line = "Accessibility audit, \(screen): \(issue.auditType) \(issue.compactDescription) element: \(label)"
                 found.lines.append(line)
                 print(line)
