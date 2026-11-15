@@ -62,7 +62,8 @@ struct FavoritesView: View {
                 }
             }
             .navigationTitle("Favorites")
-            .padding(.bottom, 80)
+            .font(.body)
+            .aboveTabBar()
             .atguideDestinations()
         }
     }

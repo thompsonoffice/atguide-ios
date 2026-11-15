@@ -12,6 +12,15 @@ extension Color {
 }
 
 extension View {
+    /// Keeps the last line of a scrolling page fully above the tab bar, on an opaque background.
+    func aboveTabBar() -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            Color(uiColor: .systemBackground)
+                .frame(height: 56)
+                .accessibilityHidden(true)
+        }
+    }
+
     /// Padding keeps a control at least about 44 points tall and lets the label grow with Dynamic Type.
     func minimumTapTarget() -> some View {
         padding(.vertical, 12)

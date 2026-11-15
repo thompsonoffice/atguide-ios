@@ -30,7 +30,6 @@ struct DeviceDetailView: View {
                         HStack(spacing: 12) { actionButtons }
                         VStack(alignment: .leading, spacing: 12) { actionButtons }
                     }
-                    .buttonStyle(.bordered)
                     .padding(.top, 4)
                 }
 
@@ -111,7 +110,8 @@ struct DeviceDetailView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.bottom, 80)
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle(device.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.device(device.id)) }

@@ -95,7 +95,8 @@ struct CompareView: View {
                 }
             }
             .navigationTitle("Compare")
-            .padding(.bottom, 80)
+            .font(.body)
+            .aboveTabBar()
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()

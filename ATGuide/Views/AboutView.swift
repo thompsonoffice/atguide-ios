@@ -43,7 +43,8 @@ struct AboutView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.bottom, 80)
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle("About")
         .inlineTitle()
     }
@@ -66,7 +67,8 @@ struct PrivacyPolicyView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.bottom, 80)
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle("Privacy Policy")
         .inlineTitle()
     }

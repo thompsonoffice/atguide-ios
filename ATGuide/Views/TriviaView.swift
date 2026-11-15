@@ -18,7 +18,8 @@ struct TriviaView: View {
             }
         }
         .navigationTitle("Trivia")
-        .padding(.bottom, 80)
+        .font(.body)
+        .aboveTabBar()
     }
 }
 

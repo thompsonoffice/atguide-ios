@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Text size choices. "Use iPhone setting" follows Settings > Accessibility > Display and Text Size.
 enum TextSizeOption: String, CaseIterable, Identifiable {
@@ -67,7 +68,9 @@ struct SettingsView: View {
                 SectionHeader("Text")
             } footer: {
                 Text("Every screen uses Dynamic Type. Use iPhone setting follows Settings, Accessibility, Display and Text Size.")
-                    .foregroundStyle(.primary)
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Section {
@@ -108,11 +111,14 @@ struct SettingsView: View {
                 SectionHeader("Saved on This Device")
             } footer: {
                 Text("Favorites, recently viewed entries and the comparison are stored only on this iPhone. Nothing is sent anywhere.")
-                    .foregroundStyle(.primary)
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .navigationTitle("Settings")
-        .padding(.bottom, 80)
+        .font(.body)
+        .aboveTabBar()
         .confirmationDialog("Remove all \(favorites.keys.count) favorites?", isPresented: $confirmFavorites, titleVisibility: .visible) {
             Button("Remove All Favorites", role: .destructive) { favorites.removeAll() }
             Button("Cancel", role: .cancel) {}
