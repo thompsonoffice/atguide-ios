@@ -23,7 +23,9 @@ struct SearchView: View {
             List {
                 Section {
                     Picker("Category", selection: $category) {
-                        Text(SearchView.allCategories).tag(SearchView.allCategories)
+                        Text("All")
+                            .accessibilityLabel(SearchView.allCategories)
+                            .tag(SearchView.allCategories)
                         ForEach(store.categories, id: \.self) { Text($0).tag($0) }
                     }
                 }
@@ -60,11 +62,12 @@ struct SearchView: View {
                 }
             }
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always),
-                        prompt: "Devices, companies, voices, specs")
+                        prompt: "Search")
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
             .navigationTitle("Search")
             .headerProminence(.increased)
+            .clearOfTabBar()
             .atguideDestinations()
             .onChange(of: query) { _, _ in announceCount() }
             .onChange(of: category) { _, _ in announceCount() }

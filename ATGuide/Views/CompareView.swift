@@ -46,11 +46,16 @@ struct CompareView: View {
                             showingPicker = true
                         } label: {
                             Label("Add Device", systemImage: "plus.circle")
+                                .font(.body)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
                     }
                     if !picked.isEmpty {
                         Button("Clear Comparison", role: .destructive) { compare.removeAll() }
+                            .font(.body)
+                            .foregroundStyle(Color.destructiveText)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 } header: {
                     SectionHeader("Devices (\(picked.count) of \(CompareStore.capacity))")
@@ -58,10 +63,16 @@ struct CompareView: View {
 
                 if picked.count >= 2 {
                     Section {
-                        Toggle("Show only differences", isOn: $differencesOnly)
-                    } footer: {
+                        Toggle(isOn: $differencesOnly) {
+                            Text("Show only differences")
+                                .font(.body)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .font(.body)
                         Text("\(shown.count) of \(rows.count) facts shown.")
+                            .font(.body)
                             .foregroundStyle(Color.supportingText)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(shown) { row in
                         Section {
@@ -80,6 +91,7 @@ struct CompareView: View {
             }
             .navigationTitle("Compare")
             .headerProminence(.increased)
+            .clearOfTabBar()
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()

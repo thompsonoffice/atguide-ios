@@ -43,8 +43,8 @@ struct AboutView: View {
             .padding()
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(uiColor: .systemBackground))
         }
+        .clearOfTabBar()
         .navigationTitle("About")
         .inlineTitle()
     }
@@ -67,8 +67,8 @@ struct PrivacyPolicyView: View {
             .padding()
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(uiColor: .systemBackground))
         }
+        .clearOfTabBar()
         .navigationTitle("Privacy Policy")
         .inlineTitle()
     }

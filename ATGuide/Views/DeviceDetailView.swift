@@ -112,8 +112,8 @@ struct DeviceDetailView: View {
             .padding()
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(uiColor: .systemBackground))
         }
+        .clearOfTabBar()
         .navigationTitle(device.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.device(device.id)) }

@@ -12,11 +12,31 @@ extension Color {
     })
 }
 
+extension Color {
+    /// Destructive actions need a red that still clears 4.5:1. The system destructive red does not.
+    static let destructiveText = Color(uiColor: UIColor { traits in
+        if traits.userInterfaceStyle == .dark {
+            return UIColor(red: 1, green: 0.55, blue: 0.48, alpha: 1)
+        }
+        return UIColor(red: 0.55, green: 0.0, blue: 0.05, alpha: 1)
+    })
+}
+
 extension View {
-    /// Interactive controls need a 44 by 44 point target.
+    /// Padding keeps a control at least about 44 points tall and lets the label grow with Dynamic Type.
     func minimumTapTarget() -> some View {
-        frame(minWidth: 44, minHeight: 44, alignment: .leading)
+        padding(.vertical, 12)
+            .padding(.horizontal, 4)
             .contentShape(Rectangle())
+    }
+
+    /// Extra space above the tab bar so the last row is not drawn across the bar.
+    func clearOfTabBar() -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            Color.clear
+                .frame(height: 28)
+                .accessibilityHidden(true)
+        }
     }
 }
 
@@ -193,6 +213,8 @@ struct FavoriteButton: View {
             favorites.toggle(key)
         } label: {
             Label("Favorite", systemImage: isOn ? "star.fill" : "star")
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityLabel("Favorite")
         .accessibilityAddTraits(isOn ? .isSelected : [])
@@ -217,6 +239,8 @@ struct CompareButton: View {
         } label: {
             Label(isIn ? "Remove from Compare" : "Add to Compare",
                   systemImage: isIn ? "minus.circle" : "plus.circle")
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .disabled(!isIn && compare.isFull)
         .accessibilityHint(!isIn && compare.isFull
@@ -235,6 +259,8 @@ struct ShareTextButton: View {
         ShareLink(item: TextFileExport(fileName: TextExporter.fileName(title), text: text),
                   preview: SharePreview("\(title), plain text")) {
             Label("Share as TXT", systemImage: "square.and.arrow.up")
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityHint("Shares or saves this entry as a plain text file.")
         .minimumTapTarget()
@@ -288,16 +314,13 @@ struct LabeledFact: View {
             Text(label)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(Color.supportingText)
-                .foregroundColor(Color.supportingText)
             Text(value)
                 .font(.body)
                 .foregroundStyle(Color.supportingText)
-                .foregroundColor(Color.supportingText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 2)
-        .background(Color(uiColor: .systemBackground))
         .accessibilityElement(children: .combine)
     }
 }

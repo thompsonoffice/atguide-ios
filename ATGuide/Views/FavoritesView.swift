@@ -54,11 +54,14 @@ struct FavoritesView: View {
                 Section {
                     NavigationLink(value: Route.recents) {
                         Label("Recently Viewed", systemImage: "clock")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
             .navigationTitle("Favorites")
             .headerProminence(.increased)
+            .clearOfTabBar()
             .atguideDestinations()
         }
     }

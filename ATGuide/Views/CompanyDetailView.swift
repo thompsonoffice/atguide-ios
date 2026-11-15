@@ -47,6 +47,7 @@ struct CompanyDetailView: View {
         .navigationTitle(company.name)
         .inlineTitle()
         .headerProminence(.increased)
+        .clearOfTabBar()
         .onAppear { recents.record(FavoriteKey.company(company.id)) }
     }
 }
@@ -59,12 +60,10 @@ struct SectionHeader: View {
         Text(title)
             .font(.title3.weight(.bold))
             .foregroundStyle(Color.supportingText)
-            .foregroundColor(Color.supportingText)
             .textCase(nil)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 2)
-            .background(Color(uiColor: .systemBackground))
             .accessibilityAddTraits(.isHeader)
     }
 }

@@ -97,8 +97,8 @@ struct OSDetailView: View {
             .padding()
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(uiColor: .systemBackground))
         }
+        .clearOfTabBar()
         .navigationTitle(os.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.os(os.id)) }

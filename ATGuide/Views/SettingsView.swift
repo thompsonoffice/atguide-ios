@@ -70,12 +70,39 @@ struct SettingsView: View {
             }
 
             Section {
-                Button("Clear Recently Viewed (\(recents.keys.count))", role: .destructive) { recents.removeAll() }
-                    .disabled(recents.keys.isEmpty)
-                Button("Clear Comparison (\(compare.ids.count))", role: .destructive) { compare.removeAll() }
-                    .disabled(compare.ids.isEmpty)
-                Button("Remove All Favorites (\(favorites.keys.count))", role: .destructive) { confirmFavorites = true }
-                    .disabled(favorites.keys.isEmpty)
+                if recents.keys.isEmpty {
+                    Text("No recently viewed entries.")
+                        .font(.body)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Button("Clear Recently Viewed (\(recents.keys.count))", role: .destructive) { recents.removeAll() }
+                        .font(.body)
+                        .foregroundStyle(Color.destructiveText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if compare.ids.isEmpty {
+                    Text("Nothing picked for comparison.")
+                        .font(.body)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Button("Clear Comparison (\(compare.ids.count))", role: .destructive) { compare.removeAll() }
+                        .font(.body)
+                        .foregroundStyle(Color.destructiveText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if favorites.keys.isEmpty {
+                    Text("No favorites yet.")
+                        .font(.body)
+                        .foregroundStyle(Color.supportingText)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Button("Remove All Favorites (\(favorites.keys.count))", role: .destructive) { confirmFavorites = true }
+                        .font(.body)
+                        .foregroundStyle(Color.destructiveText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             } header: {
                 SectionHeader("Saved on This Device")
             } footer: {
@@ -85,6 +112,7 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .headerProminence(.increased)
+        .clearOfTabBar()
         .confirmationDialog("Remove all \(favorites.keys.count) favorites?", isPresented: $confirmFavorites, titleVisibility: .visible) {
             Button("Remove All Favorites", role: .destructive) { favorites.removeAll() }
             Button("Cancel", role: .cancel) {}
