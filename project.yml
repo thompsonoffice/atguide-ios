@@ -1,0 +1,80 @@
+# XcodeGen spec for the ATGuide iPhone app. The CI workflow runs `xcodegen generate`;
+# locally: brew install xcodegen && xcodegen generate
+name: ATGuide
+options:
+  bundleIdPrefix: com.thompsonoffice
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+targets:
+  ATGuide:
+    type: application
+    platform: iOS
+    sources:
+      - path: ATGuide
+    settings:
+      base:
+        PRODUCT_NAME: ATGuide
+        PRODUCT_BUNDLE_IDENTIFIER: com.thompsonoffice.atguide
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: ATGuide
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_PREVIEWS: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+  ATGuideTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ATGuideTests
+    dependencies:
+      - target: ATGuide
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.thompsonoffice.atguide.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ATGuide.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ATGuide"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+  ATGuideUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ATGuideUITests
+    dependencies:
+      - target: ATGuide
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.thompsonoffice.atguide.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: ATGuide
+schemes:
+  ATGuide:
+    build:
+      targets:
+        ATGuide: all
+        ATGuideTests: [test]
+        ATGuideUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - ATGuideTests
+        - ATGuideUITests
+    archive:
+      config: Release
