@@ -192,14 +192,15 @@ struct FavoriteButton: View {
         Button {
             favorites.toggle(key)
         } label: {
-            Label("Favorite", systemImage: isOn ? "star.fill" : "star")
+            Text(isOn ? "★ Favorite" : "☆ Favorite")
                 .font(.body)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityLabel("Favorite")
         .accessibilityAddTraits(isOn ? .isSelected : [])
+        .buttonStyle(.plain)
         .accessibilityHint(isOn ? "Removes \(name) from Favorites." : "Adds \(name) to Favorites.")
-        .minimumTapTarget()
         .fixedSize(horizontal: false, vertical: true)
     }
 }
@@ -218,16 +219,16 @@ struct CompareButton: View {
                 : "Added \(device.name) to Compare. \(compare.ids.count) of \(CompareStore.capacity) picked."
             AccessibilityNotification.Announcement(message).post()
         } label: {
-            Label(isIn ? "Remove from Compare" : "Add to Compare",
-                  systemImage: isIn ? "minus.circle" : "plus.circle")
+            Text(isIn ? "Remove from Compare" : "Add to Compare")
                 .font(.body)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .disabled(!isIn && compare.isFull)
         .accessibilityHint(!isIn && compare.isFull
                            ? "Compare already has three devices. Remove one in the Compare tab first."
                            : (isIn ? "Takes \(device.name) out of the comparison." : "Puts \(device.name) in the Compare tab, next to up to two other devices."))
-        .minimumTapTarget()
+        .buttonStyle(.plain)
         .fixedSize(horizontal: false, vertical: true)
     }
 }
@@ -236,18 +237,32 @@ struct CompareButton: View {
 struct ShareTextButton: View {
     let title: String
     let text: String
+    @State private var showShare = false
 
     var body: some View {
-        ShareLink(item: TextFileExport(fileName: TextExporter.fileName(title), text: text),
-                  preview: SharePreview("\(title), plain text")) {
-            Label("Share as TXT", systemImage: "square.and.arrow.up")
+        Button {
+            showShare = true
+        } label: {
+            Text("Share as TXT")
                 .font(.body)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .buttonStyle(.plain)
         .accessibilityHint("Shares or saves this entry as a plain text file.")
-        .minimumTapTarget()
-        .fixedSize(horizontal: false, vertical: true)
+        .sheet(isPresented: $showShare) {
+            ActivityShare(items: [text])
+        }
     }
+}
+
+/// System share sheet for a plain-text entry. The button itself stays a text label so Dynamic Type can scale it.
+private struct ActivityShare: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
 // MARK: Detail building blocks

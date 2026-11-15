@@ -56,10 +56,13 @@ struct FavoritesView: View {
                         Text("Recently Viewed")
                             .font(.body)
                             .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .navigationTitle("Favorites")
+            .padding(.bottom, 80)
             .atguideDestinations()
         }
     }

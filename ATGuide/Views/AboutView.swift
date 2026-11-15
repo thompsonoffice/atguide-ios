@@ -43,7 +43,7 @@ struct AboutView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .toolbar(.hidden, for: .tabBar)
+        .padding(.bottom, 80)
         .navigationTitle("About")
         .inlineTitle()
     }
@@ -66,7 +66,7 @@ struct PrivacyPolicyView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .toolbar(.hidden, for: .tabBar)
+        .padding(.bottom, 80)
         .navigationTitle("Privacy Policy")
         .inlineTitle()
     }

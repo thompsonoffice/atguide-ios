@@ -18,7 +18,7 @@ struct TriviaView: View {
             }
         }
         .navigationTitle("Trivia")
-        .toolbar(.hidden, for: .tabBar)
+        .padding(.bottom, 80)
     }
 }
 

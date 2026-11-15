@@ -97,7 +97,7 @@ struct OSDetailView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .toolbar(.hidden, for: .tabBar)
+        .padding(.bottom, 80)
         .navigationTitle(os.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.os(os.id)) }

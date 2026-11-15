@@ -45,7 +45,7 @@ struct CompanyDetailView: View {
         }
         .navigationTitle(company.name)
         .inlineTitle()
-        .toolbar(.hidden, for: .tabBar)
+        .padding(.bottom, 80)
         .onAppear { recents.record(FavoriteKey.company(company.id)) }
     }
 }

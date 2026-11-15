@@ -48,7 +48,9 @@ struct CompareView: View {
                             Text("Add Device")
                                 .font(.body)
                                 .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .buttonStyle(.plain)
                         .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
                     }
                     if !picked.isEmpty {
@@ -93,6 +95,7 @@ struct CompareView: View {
                 }
             }
             .navigationTitle("Compare")
+            .padding(.bottom, 80)
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()

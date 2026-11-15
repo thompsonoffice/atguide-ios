@@ -111,7 +111,7 @@ struct DeviceDetailView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .toolbar(.hidden, for: .tabBar)
+        .padding(.bottom, 80)
         .navigationTitle(device.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.device(device.id)) }
