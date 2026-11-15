@@ -94,7 +94,7 @@ final class ATGuideUITests: XCTestCase {
                 // Unlabeled containers (list separators and header wrappers) are not controls.
                 if label.isEmpty { return true }
                 // Text cut off by the screen edge is audited when a test scrolls it fully into view.
-                if let element, !app.frame.insetBy(dx: 0, dy: 8).contains(element.frame) {
+                if let element, !self.app.frame.insetBy(dx: 0, dy: 8).contains(element.frame) {
                     return true
                 }
                 let line = "Accessibility audit, \(screen): \(issue.auditType) \(issue.compactDescription) element: \(label)"
