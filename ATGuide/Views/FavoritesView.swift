@@ -18,7 +18,7 @@ struct FavoritesView: View {
             List {
                 if devices.isEmpty && companies.isEmpty && oses.isEmpty {
                     Text("No favorites yet. Open any device, company or operating system and choose the Favorite button. Favorites are saved on this device only.")
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if !devices.isEmpty {
@@ -53,15 +53,13 @@ struct FavoritesView: View {
                 }
                 Section {
                     NavigationLink(value: Route.recents) {
-                        Label("Recently Viewed", systemImage: "clock")
+                        Text("Recently Viewed")
                             .font(.body)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
             .navigationTitle("Favorites")
-            .headerProminence(.increased)
-            .clearOfTabBar()
             .atguideDestinations()
         }
     }

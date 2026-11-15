@@ -2,17 +2,6 @@ import SwiftUI
 import UIKit
 
 extension Color {
-    /// Supporting text that stays at least 4.5:1 against system backgrounds.
-    /// The system secondary label is about 2.8:1, which fails the contrast audit.
-    static let supportingText = Color(uiColor: UIColor { traits in
-        if traits.userInterfaceStyle == .dark {
-            return UIColor(white: 0.80, alpha: 1)
-        }
-        return UIColor(red: 0.25, green: 0.25, blue: 0.27, alpha: 1)
-    })
-}
-
-extension Color {
     /// Destructive actions need a red that still clears 4.5:1. The system destructive red does not.
     static let destructiveText = Color(uiColor: UIColor { traits in
         if traits.userInterfaceStyle == .dark {
@@ -28,15 +17,6 @@ extension View {
         padding(.vertical, 12)
             .padding(.horizontal, 4)
             .contentShape(Rectangle())
-    }
-
-    /// Extra space above the tab bar so the last row is not drawn across the bar.
-    func clearOfTabBar() -> some View {
-        safeAreaInset(edge: .bottom, spacing: 0) {
-            Color.clear
-                .frame(height: 28)
-                .accessibilityHidden(true)
-        }
     }
 }
 
@@ -125,7 +105,7 @@ struct DeviceRow: View {
                 }
                 Text([device.category, store.companyName(device.company), device.releasedText].joined(separator: ", "))
                     .font(.subheadline)
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
@@ -153,7 +133,7 @@ struct CompanyRow: View {
                 }
                 Text("Founded \(company.founded.nonEmpty ?? notDocumented), \(count) \(count == 1 ? "product" : "products")")
                     .font(.subheadline)
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
@@ -180,7 +160,7 @@ struct OSRow: View {
                 }
                 Text("\(store.companyName(os.company)), \(os.versions.count) versions listed")
                     .font(.subheadline)
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
@@ -220,6 +200,7 @@ struct FavoriteButton: View {
         .accessibilityAddTraits(isOn ? .isSelected : [])
         .accessibilityHint(isOn ? "Removes \(name) from Favorites." : "Adds \(name) to Favorites.")
         .minimumTapTarget()
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -247,6 +228,7 @@ struct CompareButton: View {
                            ? "Compare already has three devices. Remove one in the Compare tab first."
                            : (isIn ? "Takes \(device.name) out of the comparison." : "Puts \(device.name) in the Compare tab, next to up to two other devices."))
         .minimumTapTarget()
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -264,6 +246,7 @@ struct ShareTextButton: View {
         }
         .accessibilityHint("Shares or saves this entry as a plain text file.")
         .minimumTapTarget()
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -283,8 +266,7 @@ struct DetailSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.title2.weight(.bold))
-                .foregroundStyle(Color.supportingText)
-                .foregroundColor(Color.supportingText)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             content
@@ -313,10 +295,10 @@ struct LabeledFact: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(Color.supportingText)
+                .foregroundStyle(.primary)
             Text(value)
                 .font(.body)
-                .foregroundStyle(Color.supportingText)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

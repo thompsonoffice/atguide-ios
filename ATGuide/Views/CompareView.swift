@@ -18,7 +18,7 @@ struct CompareView: View {
                 Section {
                     if picked.isEmpty {
                         Text("Pick two or three devices to compare their specs side by side. Use Add Device below, or the Add to Compare button on any device page.")
-                            .foregroundStyle(Color.supportingText)
+                            .foregroundStyle(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(Array(picked.enumerated()), id: \.element.id) { index, device in
@@ -28,7 +28,7 @@ struct CompareView: View {
                                     Text("Device \(index + 1): \(device.name)").font(.body.weight(.semibold))
                                     Text("\(store.companyName(device.company)), \(device.releasedText)")
                                         .font(.subheadline)
-                                        .foregroundStyle(Color.supportingText)
+                                        .foregroundStyle(.primary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                                 .accessibilityElement(children: .combine)
@@ -45,7 +45,7 @@ struct CompareView: View {
                         Button {
                             showingPicker = true
                         } label: {
-                            Label("Add Device", systemImage: "plus.circle")
+                            Text("Add Device")
                                 .font(.body)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -63,15 +63,18 @@ struct CompareView: View {
 
                 if picked.count >= 2 {
                     Section {
-                        Toggle(isOn: $differencesOnly) {
-                            Text("Show only differences")
+                        Button {
+                            differencesOnly.toggle()
+                        } label: {
+                            Text(differencesOnly ? "Showing only differences" : "Show only differences")
                                 .font(.body)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-                        .font(.body)
+                        .accessibilityAddTraits(differencesOnly ? .isSelected : [])
+                        .accessibilityHint("Hides facts that are the same for every picked device.")
                         Text("\(shown.count) of \(rows.count) facts shown.")
                             .font(.body)
-                            .foregroundStyle(Color.supportingText)
+                            .foregroundStyle(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(shown) { row in
@@ -85,13 +88,11 @@ struct CompareView: View {
                     }
                 } else if picked.count == 1 {
                     Text("Add one or two more devices to see the comparison.")
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .navigationTitle("Compare")
-            .headerProminence(.increased)
-            .clearOfTabBar()
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()
@@ -122,7 +123,7 @@ struct ComparePickerView: View {
                                 Text(device.name).font(.body.weight(.semibold))
                                 Text([device.category, store.companyName(device.company), device.releasedText].joined(separator: ", "))
                                     .font(.subheadline)
-                                    .foregroundStyle(Color.supportingText)
+                                    .foregroundStyle(.primary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .accessibilityElement(children: .combine)
@@ -132,7 +133,7 @@ struct ComparePickerView: View {
                 } header: {
                     Text("\(results.count) devices")
                         .textCase(nil)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .accessibilityAddTraits(.isHeader)
                 }
             }

@@ -20,9 +20,8 @@ struct CompanyDetailView: View {
                 ShareTextButton(title: "About " + company.name, text: TextExporter(store: store).text(for: company))
             }
             Section {
-                BodyText(company.history.nonEmpty ?? notDocumented)
-            } header: {
                 SectionHeader("History")
+                BodyText(company.history.nonEmpty ?? notDocumented)
             }
             if !oses.isEmpty {
                 Section {
@@ -46,8 +45,7 @@ struct CompanyDetailView: View {
         }
         .navigationTitle(company.name)
         .inlineTitle()
-        .headerProminence(.increased)
-        .clearOfTabBar()
+        .toolbar(.hidden, for: .tabBar)
         .onAppear { recents.record(FavoriteKey.company(company.id)) }
     }
 }
@@ -59,7 +57,7 @@ struct SectionHeader: View {
     var body: some View {
         Text(title)
             .font(.title3.weight(.bold))
-            .foregroundStyle(Color.supportingText)
+            .foregroundStyle(.primary)
             .textCase(nil)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)

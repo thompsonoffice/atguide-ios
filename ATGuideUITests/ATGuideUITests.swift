@@ -165,7 +165,7 @@ final class ATGuideUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Add to Compare"].waitForExistence(timeout: 10))
         app.buttons["Add to Compare"].tap()
         tab("Compare")
-        XCTAssertTrue(app.switches["Show only differences"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Show only differences"].waitForExistence(timeout: 10))
         XCTAssertTrue(row(startingWith: "Device 1: VersaBraille").exists)
         // Audit before scrolling. A fully loaded comparison is large enough that the audit times out.
         audit("Compare with two devices")

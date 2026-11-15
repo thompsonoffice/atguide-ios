@@ -31,7 +31,7 @@ struct SearchView: View {
                 }
                 if isIdle {
                     Text("Search every device, company, voice and operating system, including specs, history and features. For example: BrailleNote, Eloquence, refreshable braille, Echo Show.")
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Section {
@@ -66,8 +66,6 @@ struct SearchView: View {
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
             .navigationTitle("Search")
-            .headerProminence(.increased)
-            .clearOfTabBar()
             .atguideDestinations()
             .onChange(of: query) { _, _ in announceCount() }
             .onChange(of: category) { _, _ in announceCount() }

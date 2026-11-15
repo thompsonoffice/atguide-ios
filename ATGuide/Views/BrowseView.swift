@@ -46,8 +46,6 @@ struct BrowseView: View {
                 }
             }
             .navigationTitle("ATGuide")
-            .headerProminence(.increased)
-            .clearOfTabBar()
             .atguideDestinations()
         }
     }
@@ -67,7 +65,7 @@ struct LabeledCountRow: View {
                 .fixedSize(horizontal: false, vertical: true)
             Text("\(count) \(count == 1 ? noun : plural)")
                 .font(.subheadline)
-                .foregroundStyle(Color.supportingText)
+                .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 2)
@@ -88,7 +86,7 @@ struct CategoryView: View {
             } header: {
                 Text("\(list.count) \(list.count == 1 ? "entry" : "entries"), oldest first.")
                     .textCase(nil)
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
                     .accessibilityAddTraits(.isHeader)
             }
         }
@@ -106,7 +104,7 @@ struct CompaniesListView: View {
             } header: {
                 Text("\(store.companies.count) companies. Choose one to see its history and product catalog.")
                     .textCase(nil)
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
                     .accessibilityAddTraits(.isHeader)
             }
         }
@@ -142,7 +140,7 @@ struct RecentsView: View {
         List {
             if keys.isEmpty {
                 Text("Nothing viewed yet. Entries you open appear here, newest first.")
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
             } else {
                 Section {
                     ForEach(keys, id: \.self) { key in
@@ -158,7 +156,7 @@ struct RecentsView: View {
                 } header: {
                     Text("\(keys.count) entries, newest first. Kept on this device only.")
                         .textCase(nil)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .accessibilityAddTraits(.isHeader)
                 }
                 Section {

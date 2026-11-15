@@ -61,19 +61,20 @@ struct SettingsView: View {
                 .pickerStyle(.navigationLink)
                 Text("Sample: The Braille 'n Speak was introduced at the 1987 NFB convention.")
                     .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityLabel("Text size sample. The Braille 'n Speak was introduced at the 1987 NFB convention.")
             } header: {
                 SectionHeader("Text")
             } footer: {
                 Text("Every screen uses Dynamic Type. Use iPhone setting follows Settings, Accessibility, Display and Text Size.")
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
             }
 
             Section {
                 if recents.keys.isEmpty {
                     Text("No recently viewed entries.")
                         .font(.body)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Button("Clear Recently Viewed (\(recents.keys.count))", role: .destructive) { recents.removeAll() }
@@ -84,7 +85,7 @@ struct SettingsView: View {
                 if compare.ids.isEmpty {
                     Text("Nothing picked for comparison.")
                         .font(.body)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Button("Clear Comparison (\(compare.ids.count))", role: .destructive) { compare.removeAll() }
@@ -95,7 +96,7 @@ struct SettingsView: View {
                 if favorites.keys.isEmpty {
                     Text("No favorites yet.")
                         .font(.body)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Button("Remove All Favorites (\(favorites.keys.count))", role: .destructive) { confirmFavorites = true }
@@ -107,12 +108,11 @@ struct SettingsView: View {
                 SectionHeader("Saved on This Device")
             } footer: {
                 Text("Favorites, recently viewed entries and the comparison are stored only on this iPhone. Nothing is sent anywhere.")
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
             }
         }
         .navigationTitle("Settings")
-        .headerProminence(.increased)
-        .clearOfTabBar()
+        .toolbar(.hidden, for: .tabBar)
         .confirmationDialog("Remove all \(favorites.keys.count) favorites?", isPresented: $confirmFavorites, titleVisibility: .visible) {
             Button("Remove All Favorites", role: .destructive) { favorites.removeAll() }
             Button("Cancel", role: .cancel) {}

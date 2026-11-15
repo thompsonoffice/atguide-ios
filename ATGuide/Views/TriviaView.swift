@@ -18,8 +18,7 @@ struct TriviaView: View {
             }
         }
         .navigationTitle("Trivia")
-        .headerProminence(.increased)
-        .clearOfTabBar()
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
@@ -34,7 +33,7 @@ struct TriviaRow: View {
                     BodyText(fact.text)
                     Text("About \(device.name)")
                         .font(.footnote)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.vertical, 2)

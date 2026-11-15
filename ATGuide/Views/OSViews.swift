@@ -10,7 +10,7 @@ struct OSHistoryListView: View {
             } header: {
                 Text("\(store.osHistories.count) operating system and software version histories.")
                     .textCase(nil)
-                    .foregroundStyle(Color.supportingText)
+                    .foregroundStyle(.primary)
                     .accessibilityAddTraits(.isHeader)
             }
         }
@@ -35,7 +35,7 @@ struct OSDetailView: View {
                         .accessibilityAddTraits(.isHeader)
                     Text("\(companyName), \(os.versions.count) versions listed")
                         .font(.title3)
-                        .foregroundStyle(Color.supportingText)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                     NavigationLink(value: Route.company(os.company)) {
                         Text("About \(companyName)")
@@ -62,8 +62,7 @@ struct OSDetailView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(v.name)
                                 .font(.title3.weight(.bold))
-                                .foregroundStyle(Color.supportingText)
-                                .foregroundColor(Color.supportingText)
+                                .foregroundStyle(.primary)
                                 .accessibilityAddTraits(.isHeader)
                             LabeledFact(label: "Released", value: v.released.nonEmpty ?? notDocumented)
                             LabeledFact(label: "Notes", value: v.notes.nonEmpty ?? notDocumented)
@@ -98,7 +97,7 @@ struct OSDetailView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .clearOfTabBar()
+        .toolbar(.hidden, for: .tabBar)
         .navigationTitle(os.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.os(os.id)) }
