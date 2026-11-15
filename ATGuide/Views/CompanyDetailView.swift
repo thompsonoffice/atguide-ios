@@ -46,6 +46,7 @@ struct CompanyDetailView: View {
         }
         .navigationTitle(company.name)
         .inlineTitle()
+        .headerProminence(.increased)
         .onAppear { recents.record(FavoriteKey.company(company.id)) }
     }
 }
@@ -56,10 +57,14 @@ struct SectionHeader: View {
     init(_ title: String) { self.title = title }
     var body: some View {
         Text(title)
-            .font(.headline)
-            .foregroundStyle(.primary)
+            .font(.title3.weight(.bold))
+            .foregroundStyle(Color.supportingText)
+            .foregroundColor(Color.supportingText)
             .textCase(nil)
             .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 2)
+            .background(Color(uiColor: .systemBackground))
             .accessibilityAddTraits(.isHeader)
     }
 }

@@ -61,7 +61,9 @@ struct OSDetailView: View {
                     ForEach(Array(os.versions.enumerated()), id: \.offset) { _, v in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(v.name)
-                                .font(.headline)
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(Color.supportingText)
+                                .foregroundColor(Color.supportingText)
                                 .accessibilityAddTraits(.isHeader)
                             LabeledFact(label: "Released", value: v.released.nonEmpty ?? notDocumented)
                             LabeledFact(label: "Notes", value: v.notes.nonEmpty ?? notDocumented)
@@ -95,6 +97,7 @@ struct OSDetailView: View {
             .padding()
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(uiColor: .systemBackground))
         }
         .navigationTitle(os.name)
         .inlineTitle()

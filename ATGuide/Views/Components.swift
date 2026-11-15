@@ -257,7 +257,8 @@ struct DetailSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.title2.weight(.bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.supportingText)
+                .foregroundColor(Color.supportingText)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             content
@@ -284,10 +285,19 @@ struct LabeledFact: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
-            Text(value).font(.body).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+            Text(label)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color.supportingText)
+                .foregroundColor(Color.supportingText)
+            Text(value)
+                .font(.body)
+                .foregroundStyle(Color.supportingText)
+                .foregroundColor(Color.supportingText)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+        .background(Color(uiColor: .systemBackground))
         .accessibilityElement(children: .combine)
     }
 }

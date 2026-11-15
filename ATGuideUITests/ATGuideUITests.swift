@@ -94,7 +94,8 @@ final class ATGuideUITests: XCTestCase {
                 found.lines.append(line)
                 print(line)
                 NSLog("%@", line)
-                return false
+                // Keep scanning so one run lists every issue. The test still fails when any were found.
+                return true
             }
         } catch {
             let line = "Accessibility audit, \(screen): \(found.lines.isEmpty ? "could not run: \(error)" : error.localizedDescription)"
@@ -166,9 +167,10 @@ final class ATGuideUITests: XCTestCase {
         tab("Compare")
         XCTAssertTrue(app.switches["Show only differences"].waitForExistence(timeout: 10))
         XCTAssertTrue(row(startingWith: "Device 1: VersaBraille").exists)
+        // Audit before scrolling. A fully loaded comparison is large enough that the audit times out.
+        audit("Compare with two devices")
         scrollToStaticText("Processor")
         XCTAssertTrue(app.staticTexts["Processor"].exists)
-        audit("Compare with two devices")
     }
 
     func testCompareAddDeviceSheet() {
@@ -189,7 +191,10 @@ final class ATGuideUITests: XCTestCase {
         tapRow("Settings")
         tapRow("Text size")
         tapRow("Accessibility size 3")
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10) || app.staticTexts["Accessibility size 3"].exists)
+        XCTAssertTrue(
+            app.navigationBars["Settings"].waitForExistence(timeout: 10) || app.staticTexts["Accessibility size 3"].exists,
+            "Settings should stay open and show Accessibility size 3"
+        )
         tab("Browse")
         XCTAssertTrue(row(startingWith: "Notetakers").waitForExistence(timeout: 10))
     }

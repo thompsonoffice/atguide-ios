@@ -58,6 +58,7 @@ struct FavoritesView: View {
                 }
             }
             .navigationTitle("Favorites")
+            .headerProminence(.increased)
             .atguideDestinations()
         }
     }

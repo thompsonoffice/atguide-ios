@@ -18,6 +18,7 @@ struct TriviaView: View {
             }
         }
         .navigationTitle("Trivia")
+        .headerProminence(.increased)
     }
 }
 

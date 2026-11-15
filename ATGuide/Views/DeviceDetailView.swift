@@ -44,7 +44,11 @@ struct DeviceDetailView: View {
                     }
                     let more = store.moreSpecRows(for: device)
                     if !more.isEmpty {
-                        Text("More specs").font(.headline).accessibilityAddTraits(.isHeader)
+                        Text("More specs")
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(Color.supportingText)
+                            .foregroundColor(Color.supportingText)
+                            .accessibilityAddTraits(.isHeader)
                         ForEach(more) { row in
                             LabeledFact(label: row.label, value: row.value)
                         }
@@ -84,7 +88,9 @@ struct DeviceDetailView: View {
                     let histories = store.osHistories(forDevice: device.id)
                     if !histories.isEmpty {
                         Text("Operating system history")
-                            .font(.headline)
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(Color.supportingText)
+                            .foregroundColor(Color.supportingText)
                             .accessibilityAddTraits(.isHeader)
                         ForEach(histories) { os in
                             NavigationLink(value: Route.os(os.id)) {
@@ -106,6 +112,7 @@ struct DeviceDetailView: View {
             .padding()
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(uiColor: .systemBackground))
         }
         .navigationTitle(device.name)
         .inlineTitle()
