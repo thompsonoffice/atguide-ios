@@ -58,23 +58,11 @@ final class AppStoreScreenshotTests: XCTestCase {
         settle()
         try capture("04-search")
 
-        // Start from a clean compare list: add two well-known notetakers.
-        tab("Browse")
-        // If still on a detail/category page, tabbing Browse should show the root.
-        if !app.staticTexts["Categories"].waitForExistence(timeout: 3) {
-            tapRow("Notetakers")
-        } else {
-            tapRow("Notetakers")
-        }
-        tapRow("VersaBraille,")
-        XCTAssertTrue(app.buttons["Add to Compare"].waitForExistence(timeout: 10))
-        app.buttons["Add to Compare"].tap()
-        XCTAssertTrue(app.buttons["Remove from Compare"].waitForExistence(timeout: 5))
-        goBack()
-        tapRow("BrailleNote Touch,")
-        XCTAssertTrue(app.buttons["Add to Compare"].waitForExistence(timeout: 10))
-        app.buttons["Add to Compare"].tap()
+        // Add devices from the Compare tab so this does not depend on Browse
+        // still being on a category or detail page after the earlier shots.
         tab("Compare")
+        addDeviceToCompare("VersaBraille,")
+        addDeviceToCompare("BrailleNote Touch,")
         XCTAssertTrue(app.buttons["Show only differences"].waitForExistence(timeout: 10))
         settle()
         try capture("05-compare")
@@ -163,12 +151,25 @@ final class AppStoreScreenshotTests: XCTestCase {
         var element = rowCandidates(startingWith: prefix).first(where: \.exists)
         var swipes = 0
         while element?.isHittable != true && swipes < 16 {
-            app.swipeUp()
+            if swipes % 2 == 0 { app.swipeUp() } else { app.swipeDown() }
             swipes += 1
             element = rowCandidates(startingWith: prefix).first(where: \.exists)
         }
         XCTAssertTrue(element?.exists == true, "row starting with \(prefix)")
         element?.tap()
+    }
+
+    private func addDeviceToCompare(_ prefix: String) {
+        let add = app.buttons["Add Device"]
+        XCTAssertTrue(add.waitForExistence(timeout: 10), "Add Device")
+        add.tap()
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10), "compare search field")
+        field.tap()
+        field.typeText(String(prefix.trimmingCharacters(in: CharacterSet(charactersIn: ","))))
+        tapRow(prefix)
+        // Back on the compare list, the first device row should exist.
+        settle()
     }
 
     private func goBack() {
