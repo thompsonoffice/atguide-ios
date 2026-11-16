@@ -90,10 +90,13 @@ struct CompareView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     if !picked.isEmpty {
-                        Button("Clear Comparison", role: .destructive) { compare.removeAll() }
-                            .font(.body)
-                            .foregroundColor(Color.destructiveText)
-                            .buttonStyle(.plain)
+                        Button(role: .destructive) { compare.removeAll() } label: {
+                            Text("Clear Comparison")
+                                .font(.body)
+                                .foregroundColor(Color.destructiveText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .buttonStyle(.plain)
                     }
                     if !compare.isFull {
                         Button("Add Device") { showingPicker = true }
