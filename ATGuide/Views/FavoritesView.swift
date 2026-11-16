@@ -65,6 +65,7 @@ struct FavoritesView: View {
             }
             .navigationTitle("Favorites")
             .font(.body)
+            .aboveTabBar()
             .atguideDestinations()
         }
     }

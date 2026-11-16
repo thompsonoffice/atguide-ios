@@ -53,15 +53,10 @@ struct CompareView: View {
                 }
 
                 if picked.count >= 2 {
-                    Section {
-                        Button {
-                            differencesOnly.toggle()
-                        } label: {
-                            Text(differencesOnly ? "Showing only differences" : "Show only differences")
-                                .font(.body)
-                        }
-                        .accessibilityAddTraits(differencesOnly ? .isSelected : [])
-                        .accessibilityHint("Hides facts that are the same for every picked device.")
+                    if differencesOnly && shown.isEmpty {
+                        Text("Every fact matches.")
+                            .font(.body)
+                            .foregroundColor(.primary)
                     }
                     ForEach(shown) { row in
                         Section {
@@ -80,9 +75,20 @@ struct CompareView: View {
             }
             .navigationTitle("Compare")
             .font(.body)
+            .aboveTabBar()
             .safeAreaInset(edge: .top) {
                 VStack(alignment: .leading, spacing: 8) {
                     if picked.count >= 2 {
+                        Button {
+                            differencesOnly.toggle()
+                        } label: {
+                            Text(differencesOnly ? "Showing only differences" : "Show only differences")
+                                .font(.body)
+                                .foregroundColor(.primary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(differencesOnly ? .isSelected : [])
+                        .accessibilityHint("Hides facts that are the same for every picked device.")
                         Text("\(shown.count) of \(rows.count) facts shown.")
                             .font(.body)
                             .foregroundColor(.primary)

@@ -94,6 +94,7 @@ struct OSDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .font(.body)
+        .aboveTabBar()
         .navigationTitle(os.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.os(os.id)) }

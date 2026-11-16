@@ -108,6 +108,7 @@ struct DeviceDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .font(.body)
+        .aboveTabBar()
         .navigationTitle(device.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.device(device.id)) }

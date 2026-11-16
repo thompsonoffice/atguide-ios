@@ -47,6 +47,7 @@ struct BrowseView: View {
             }
             .navigationTitle("ATGuide")
             .font(.body)
+            .aboveTabBar()
             .atguideDestinations()
         }
     }
