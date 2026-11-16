@@ -21,7 +21,7 @@ extension View {
     func aboveTabBar() -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) {
             Color(uiColor: .systemBackground)
-                .frame(height: 56)
+                .frame(height: 160)
                 .accessibilityHidden(true)
         }
     }
@@ -317,18 +317,20 @@ struct LabeledFact: View {
     private var paper: Color { colorScheme == .dark ? .black : .white }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(.body.weight(.semibold))
                 .foregroundColor(ink)
+                .padding(2)
+                .background(paper)
             Text(value)
                 .font(.body)
                 .foregroundColor(ink)
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(2)
+                .background(paper)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 2)
-        .background(paper)
         .accessibilityElement(children: .combine)
     }
 }

@@ -42,12 +42,6 @@ struct CompareView: View {
                         }
                         .accessibilityAction(named: "Remove from Compare") { compare.remove(device.id) }
                     }
-                    if !picked.isEmpty {
-                        Button("Clear Comparison", role: .destructive) { compare.removeAll() }
-                            .font(.body)
-                            .foregroundStyle(Color.destructiveText)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
                 } header: {
                     SectionHeader("Devices (\(picked.count) of \(CompareStore.capacity))")
                 }
@@ -92,6 +86,12 @@ struct CompareView: View {
                         Text("\(shown.count) of \(rows.count) facts shown.")
                             .font(.body)
                             .foregroundColor(.primary)
+                    }
+                    if !picked.isEmpty {
+                        Button("Clear Comparison", role: .destructive) { compare.removeAll() }
+                            .font(.body)
+                            .foregroundColor(Color.destructiveText)
+                            .buttonStyle(.plain)
                     }
                     if !compare.isFull {
                         Button("Add Device") { showingPicker = true }

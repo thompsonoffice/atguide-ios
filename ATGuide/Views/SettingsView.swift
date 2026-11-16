@@ -56,10 +56,20 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Text size", selection: $textSize) {
-                    ForEach(TextSizeOption.allCases) { Text($0.title).tag($0) }
+                NavigationLink {
+                    List(TextSizeOption.allCases) { option in
+                        Button(option.title) { textSize = option }
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .accessibilityAddTraits(textSize == option ? .isSelected : [])
+                    }
+                    .navigationTitle("Text size")
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Text size").font(.body).foregroundColor(.primary)
+                        Text(textSize.title).font(.body).foregroundColor(.primary)
+                    }
                 }
-                .pickerStyle(.navigationLink)
                 Text("Sample: The Braille 'n Speak was introduced at the 1987 NFB convention.")
                     .font(.body)
                     .fixedSize(horizontal: false, vertical: true)
