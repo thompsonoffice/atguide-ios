@@ -1,8 +1,10 @@
 import SwiftUI
+import UIKit
 
 struct FavoritesView: View {
     @EnvironmentObject private var store: ATGuideStore
     @EnvironmentObject private var favorites: FavoritesStore
+    @State private var path = NavigationPath()
 
     var body: some View {
         let devices = ATGuideStore.sortDevices(favorites.keys.compactMap { key in
@@ -14,7 +16,7 @@ struct FavoritesView: View {
         let oses = favorites.keys.compactMap { key in
             FavoriteKey.parse(key).flatMap { $0.kind == .os ? store.os($0.id) : nil }
         }.sorted { ATGuideStore.nameOrder($0.name, $1.name) }
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 if devices.isEmpty && companies.isEmpty && oses.isEmpty {
                     Text("No favorites yet. Open any device, company or operating system and choose the Favorite button. Favorites are saved on this device only.")
@@ -51,13 +53,14 @@ struct FavoritesView: View {
                         SectionHeader("Operating systems (\(oses.count))")
                     }
                 }
-                Section {
-                    NavigationLink(value: Route.recents) {
-                        Text("Recently Viewed")
-                            .font(.body)
-                    }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button("Recently Viewed") { path.append(Route.recents) }
+                    .font(.body)
                     .buttonStyle(.plain)
-                }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color(uiColor: .systemBackground))
             }
             .navigationTitle("Favorites")
             .font(.body)

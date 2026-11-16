@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Side-by-side comparison of two or three devices. Instead of a wide grid, each fact is a
 /// heading followed by one line per device, so VoiceOver reads "Battery, heading",
@@ -41,16 +42,6 @@ struct CompareView: View {
                         }
                         .accessibilityAction(named: "Remove from Compare") { compare.remove(device.id) }
                     }
-                    if !compare.isFull {
-                        Button {
-                            showingPicker = true
-                        } label: {
-                            Text("Add Device")
-                                .font(.body)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
-                    }
                     if !picked.isEmpty {
                         Button("Clear Comparison", role: .destructive) { compare.removeAll() }
                             .font(.body)
@@ -92,6 +83,17 @@ struct CompareView: View {
             }
             .navigationTitle("Compare")
             .font(.body)
+            .safeAreaInset(edge: .bottom) {
+                if !compare.isFull {
+                    Button("Add Device") { showingPicker = true }
+                        .font(.body)
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .background(Color(uiColor: .systemBackground))
+                        .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
+                }
+            }
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()

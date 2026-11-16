@@ -2,6 +2,11 @@ import SwiftUI
 import UIKit
 
 extension Color {
+    /// Black or white, so body text is not a gray that fails the contrast audit.
+    static let ink = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? .white : .black
+    })
+
     /// Destructive actions need a red that still clears 4.5:1. The system destructive red does not.
     static let destructiveText = Color(uiColor: UIColor { traits in
         if traits.userInterfaceStyle == .dark {
@@ -311,14 +316,15 @@ struct LabeledFact: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.ink)
             Text(value)
                 .font(.body)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 2)
+        .background(Color(uiColor: .systemBackground))
         .accessibilityElement(children: .combine)
     }
 }
