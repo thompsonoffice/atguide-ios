@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum AppTab: String {
     case browse, search, favorites, compare, more
@@ -28,6 +29,8 @@ struct ContentView: View {
                 .tabItem { Label("More", systemImage: "ellipsis.circle") }
                 .tag(AppTab.more)
         }
+        .toolbarBackground(Color(uiColor: .systemBackground), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 }
 
@@ -38,21 +41,30 @@ struct MoreView: View {
                 Section {
                     NavigationLink(value: Route.settings) {
                         Label("Settings", systemImage: "gearshape")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     NavigationLink(value: Route.recents) {
                         Label("Recently Viewed", systemImage: "clock")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Section {
                     NavigationLink(value: Route.about) {
                         Label("About ATGuide", systemImage: "info.circle")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     NavigationLink(value: Route.privacy) {
                         Label("Privacy Policy", systemImage: "hand.raised")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
             .navigationTitle("More")
+            .font(.body)
             .atguideDestinations()
         }
     }

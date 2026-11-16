@@ -34,6 +34,7 @@ struct TimelineBrowseView: View {
                     }
                 } footer: {
                     Text("\(list.count) entries, grouped by decade and year.")
+                        .foregroundStyle(.primary)
                 }
                 ForEach(decades, id: \.self) { dec in
                     let inDecade = list.filter { decade($0) == dec }

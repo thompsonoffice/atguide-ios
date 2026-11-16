@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Side-by-side comparison of two or three devices. Instead of a wide grid, each fact is a
 /// heading followed by one line per device, so VoiceOver reads "Battery, heading",
@@ -18,7 +19,8 @@ struct CompareView: View {
                 Section {
                     if picked.isEmpty {
                         Text("Pick two or three devices to compare their specs side by side. Use Add Device below, or the Add to Compare button on any device page.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     ForEach(Array(picked.enumerated()), id: \.element.id) { index, device in
                         HStack(alignment: .firstTextBaseline) {
@@ -26,7 +28,9 @@ struct CompareView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Device \(index + 1): \(device.name)").font(.body.weight(.semibold))
                                     Text("\(store.companyName(device.company)), \(device.releasedText)")
-                                        .font(.subheadline).foregroundStyle(.secondary)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.primary)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                                 .accessibilityElement(children: .combine)
                             }
@@ -38,26 +42,15 @@ struct CompareView: View {
                         }
                         .accessibilityAction(named: "Remove from Compare") { compare.remove(device.id) }
                     }
-                    if !compare.isFull {
-                        Button {
-                            showingPicker = true
-                        } label: {
-                            Label("Add Device", systemImage: "plus.circle")
-                        }
-                        .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
-                    }
-                    if !picked.isEmpty {
-                        Button("Clear Comparison", role: .destructive) { compare.removeAll() }
-                    }
                 } header: {
                     SectionHeader("Devices (\(picked.count) of \(CompareStore.capacity))")
                 }
 
                 if picked.count >= 2 {
-                    Section {
-                        Toggle("Show only differences", isOn: $differencesOnly)
-                    } footer: {
-                        Text("\(shown.count) of \(rows.count) facts shown.")
+                    if differencesOnly && shown.isEmpty {
+                        Text("Every fact matches.")
+                            .font(.body)
+                            .foregroundColor(.primary)
                     }
                     ForEach(shown) { row in
                         Section {
@@ -70,10 +63,53 @@ struct CompareView: View {
                     }
                 } else if picked.count == 1 {
                     Text("Add one or two more devices to see the comparison.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .navigationTitle("Compare")
+            .font(.body)
+            .aboveTabBar()
+            .safeAreaInset(edge: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    if picked.count >= 2 {
+                        Button {
+                            differencesOnly.toggle()
+                        } label: {
+                            Text(differencesOnly ? "Showing only differences" : "Show only differences")
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(differencesOnly ? .isSelected : [])
+                        .accessibilityHint("Hides facts that are the same for every picked device.")
+                        Text("\(shown.count) of \(rows.count) facts shown.")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if !picked.isEmpty {
+                        Button(role: .destructive) { compare.removeAll() } label: {
+                            Text("Clear Comparison")
+                                .font(.body)
+                                .foregroundColor(Color.destructiveText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if !compare.isFull {
+                        Button("Add Device") { showingPicker = true }
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .buttonStyle(.plain)
+                            .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color(uiColor: .systemBackground))
+            }
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {
                 ComparePickerView()
@@ -103,14 +139,19 @@ struct ComparePickerView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(device.name).font(.body.weight(.semibold))
                                 Text([device.category, store.companyName(device.company), device.releasedText].joined(separator: ", "))
-                                    .font(.subheadline).foregroundStyle(.secondary)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.primary)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             .accessibilityElement(children: .combine)
                         }
                         .foregroundStyle(.primary)
                     }
                 } header: {
-                    Text("\(results.count) devices").textCase(nil)
+                    Text("\(results.count) devices")
+                        .textCase(nil)
+                        .foregroundStyle(.primary)
+                        .accessibilityAddTraits(.isHeader)
                 }
             }
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a device to add")

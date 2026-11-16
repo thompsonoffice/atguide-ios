@@ -29,8 +29,8 @@ A native SwiftUI iPhone app (iOS 17+) of ATGuide 2.0, the assistive-technology e
 - `ATGuide/`: app sources (`App`, `Model`, `Views`), `Resources/atguide-data.json`, assets (placeholder icon), `PrivacyInfo.xcprivacy`.
 - `ATGuideTests/`: unit tests (data integrity, search, comparison, export, saved state).
 - `ATGuideUITests/`: UI flow tests and `performAccessibilityAudit()` audits.
-- `ci/workflows/ios-ci.yml` (to be moved to `.github/workflows/`, see `ci/README.md`): simulator build + all tests on every push to main.
-- `ci/workflows/testflight-upload.yml`: signing and upload, **disabled** until the developer account is active. See `docs/APP-STORE-SETUP.md`.
+- `.github/workflows/ios-ci.yml`: simulator build, unit tests, UI tests, and accessibility audits on every pull request and every push to main. See `ci/README.md`.
+- `.github/workflows/testflight-upload.yml`: signing and upload, **disabled** unless the repository variable `ENABLE_TESTFLIGHT_UPLOAD` is `true`. See `docs/APP-STORE-SETUP.md`.
 - `docs/PRIVACY-POLICY.md`: privacy policy text for the App Store privacy policy URL.
 
 ## Not verified yet

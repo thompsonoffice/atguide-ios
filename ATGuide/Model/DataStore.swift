@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 /// One row of the comparison view: a label and one value per compared device, in order.
@@ -11,7 +12,9 @@ struct ComparisonRow: Hashable, Identifiable {
 
 /// Read-only store for the bundled ATGuide data, with lookup tables, search and the
 /// derived links (operating system histories per device, devices per voice).
-final class ATGuideStore {
+/// ObservableObject only so SwiftUI can pass it through the environment. The data
+/// never changes after launch.
+final class ATGuideStore: ObservableObject {
     let data: ATGuideData
     let companies: [Company]          // sorted by name
     let devices: [Device]             // sorted by year, then name

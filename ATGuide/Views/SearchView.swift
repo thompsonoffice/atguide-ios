@@ -23,13 +23,16 @@ struct SearchView: View {
             List {
                 Section {
                     Picker("Category", selection: $category) {
-                        Text(SearchView.allCategories).tag(SearchView.allCategories)
+                        Text("All")
+                            .accessibilityLabel(SearchView.allCategories)
+                            .tag(SearchView.allCategories)
                         ForEach(store.categories, id: \.self) { Text($0).tag($0) }
                     }
                 }
                 if isIdle {
                     Text("Search every device, company, voice and operating system, including specs, history and features. For example: BrailleNote, Eloquence, refreshable braille, Echo Show.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Section {
                         Text(total == 1 ? "1 result" : "\(total) results")
@@ -59,13 +62,15 @@ struct SearchView: View {
                 }
             }
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always),
-                        prompt: "Devices, companies, voices, specs")
+                        prompt: "Search")
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
             .navigationTitle("Search")
+            .font(.body)
+            .aboveTabBar()
             .atguideDestinations()
-            .onChange(of: query) { announceCount() }
-            .onChange(of: category) { announceCount() }
+            .onChange(of: query) { _, _ in announceCount() }
+            .onChange(of: category) { _, _ in announceCount() }
         }
     }
 

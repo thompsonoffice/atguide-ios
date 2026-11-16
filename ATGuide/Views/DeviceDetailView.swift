@@ -19,17 +19,15 @@ struct DeviceDetailView: View {
                         .accessibilityAddTraits(.isHeader)
                     Text("\(device.category), \(companyName), \(device.releasedText)")
                         .font(.title3)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                     NavigationLink(value: Route.company(device.company)) {
                         Text("About \(companyName)")
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 12) { actionButtons }
-                        VStack(alignment: .leading, spacing: 12) { actionButtons }
-                    }
-                    .buttonStyle(.bordered)
-                    .padding(.top, 4)
+                    .minimumTapTarget()
+                    VStack(alignment: .leading, spacing: 12) { actionButtons }
+                        .padding(.top, 4)
                 }
 
                 DetailSection("Overview") {
@@ -42,7 +40,10 @@ struct DeviceDetailView: View {
                     }
                     let more = store.moreSpecRows(for: device)
                     if !more.isEmpty {
-                        Text("More specs").font(.headline).accessibilityAddTraits(.isHeader)
+                        Text("More specs")
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(.primary)
+                            .accessibilityAddTraits(.isHeader)
                         ForEach(more) { row in
                             LabeledFact(label: row.label, value: row.value)
                         }
@@ -81,9 +82,15 @@ struct DeviceDetailView: View {
                     BodyText(store.operatingSystemText(device))
                     let histories = store.osHistories(forDevice: device.id)
                     if !histories.isEmpty {
-                        Text("Operating system history").font(.headline)
+                        Text("Operating system history")
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(.primary)
+                            .accessibilityAddTraits(.isHeader)
                         ForEach(histories) { os in
-                            NavigationLink(value: Route.os(os.id)) { Text(os.name) }
+                            NavigationLink(value: Route.os(os.id)) {
+                                Text(os.name).fixedSize(horizontal: false, vertical: true)
+                            }
+                            .minimumTapTarget()
                         }
                     }
                 }
@@ -100,6 +107,8 @@ struct DeviceDetailView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle(device.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.device(device.id)) }

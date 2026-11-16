@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// A company's history, then its catalog grouped by type (category).
 struct CompanyDetailView: View {
@@ -16,13 +17,10 @@ struct CompanyDetailView: View {
                     .accessibilityAddTraits(.isHeader)
                 LabeledFact(label: "Founded", value: company.founded.nonEmpty ?? notDocumented)
                 LabeledFact(label: "Products listed", value: String(store.productCount(of: company.id)))
-                FavoriteButton(key: FavoriteKey.company(company.id), name: company.name)
-                ShareTextButton(title: "About " + company.name, text: TextExporter(store: store).text(for: company))
             }
             Section {
-                BodyText(company.history.nonEmpty ?? notDocumented)
-            } header: {
                 SectionHeader("History")
+                BodyText(company.history.nonEmpty ?? notDocumented)
             }
             if !oses.isEmpty {
                 Section {
@@ -46,6 +44,17 @@ struct CompanyDetailView: View {
         }
         .navigationTitle(company.name)
         .inlineTitle()
+        .font(.body)
+        .safeAreaInset(edge: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                FavoriteButton(key: FavoriteKey.company(company.id), name: company.name)
+                ShareTextButton(title: "About " + company.name, text: TextExporter(store: store).text(for: company))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color(uiColor: .systemBackground))
+        }
+        .aboveTabBar()
         .onAppear { recents.record(FavoriteKey.company(company.id)) }
     }
 }
@@ -56,8 +65,12 @@ struct SectionHeader: View {
     init(_ title: String) { self.title = title }
     var body: some View {
         Text(title)
-            .font(.headline)
+            .font(.title3.weight(.bold))
+            .foregroundStyle(.primary)
             .textCase(nil)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 2)
             .accessibilityAddTraits(.isHeader)
     }
 }

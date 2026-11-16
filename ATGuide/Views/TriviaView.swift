@@ -18,6 +18,8 @@ struct TriviaView: View {
             }
         }
         .navigationTitle("Trivia")
+        .font(.body)
+        .aboveTabBar()
     }
 }
 
@@ -32,7 +34,8 @@ struct TriviaRow: View {
                     BodyText(fact.text)
                     Text("About \(device.name)")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.vertical, 2)
                 .accessibilityElement(children: .combine)

@@ -15,6 +15,7 @@ struct AboutView: View {
             VStack(alignment: .leading, spacing: 24) {
                 Text("About ATGuide")
                     .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(.primary)
                     .accessibilityAddTraits(.isHeader)
                 DetailSection("What this is") {
                     BodyText("ATGuide is a reference to blindness and low-vision assistive technology from the 1970s to today: notetakers, braille displays, speech synthesizers, text-to-speech voices, screen readers, magnifiers, wearables, embossers, and smart speakers and home devices.")
@@ -33,6 +34,7 @@ struct AboutView: View {
                 DetailSection("Privacy") {
                     BodyText("ATGuide works offline and collects no data. Favorites, recently viewed entries and comparisons stay on this device.")
                     NavigationLink("Read the privacy policy", value: Route.privacy)
+                        .minimumTapTarget()
                 }
                 LabeledFact(label: "Developer", value: "Hunter Thompson")
                 LabeledFact(label: "Version", value: version)
@@ -41,6 +43,8 @@ struct AboutView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle("About")
         .inlineTitle()
     }
@@ -52,6 +56,7 @@ struct PrivacyPolicyView: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("ATGuide Privacy Policy")
                     .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(.primary)
                     .accessibilityAddTraits(.isHeader)
                 BodyText("Effective \(PrivacyPolicy.effectiveDate)")
                 ForEach(PrivacyPolicy.paragraphs) { item in
@@ -62,6 +67,8 @@ struct PrivacyPolicyView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle("Privacy Policy")
         .inlineTitle()
     }

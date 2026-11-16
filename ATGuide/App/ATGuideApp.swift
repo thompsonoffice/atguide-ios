@@ -1,9 +1,5 @@
 import SwiftUI
 
-/// The data store never changes after launch, so it only needs to be
-/// an ObservableObject to travel through the SwiftUI environment.
-extension ATGuideStore: ObservableObject {}
-
 @main
 struct ATGuideApp: App {
     @StateObject private var favorites: FavoritesStore
@@ -49,14 +45,13 @@ struct ATGuideApp: App {
 }
 
 /// Applies the text size chosen in Settings. "Use iPhone setting" leaves Dynamic Type alone.
+/// The same ContentView stays on screen when the size changes, so an open page is not dismissed.
 struct RootView: View {
     @AppStorage(TextSizeOption.storageKey) private var textSize: TextSizeOption = .system
+    @Environment(\.dynamicTypeSize) private var systemSize
 
     var body: some View {
-        if let size = textSize.dynamicTypeSize {
-            ContentView().dynamicTypeSize(size)
-        } else {
-            ContentView()
-        }
+        ContentView()
+            .dynamicTypeSize(textSize.dynamicTypeSize ?? systemSize)
     }
 }

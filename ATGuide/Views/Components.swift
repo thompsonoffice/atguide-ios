@@ -1,4 +1,38 @@
 import SwiftUI
+import UIKit
+
+extension Color {
+    /// Black or white, so body text is not a gray that fails the contrast audit.
+    static let ink = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? .white : .black
+    })
+
+    /// Destructive actions need a red that still clears 4.5:1. The system destructive red does not.
+    static let destructiveText = Color(uiColor: UIColor { traits in
+        if traits.userInterfaceStyle == .dark {
+            return UIColor(red: 1, green: 0.55, blue: 0.48, alpha: 1)
+        }
+        return UIColor(red: 0.55, green: 0.0, blue: 0.05, alpha: 1)
+    })
+}
+
+extension View {
+    /// Keeps the last line of a scrolling page fully above the tab bar, on an opaque background.
+    func aboveTabBar() -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            Color(uiColor: .systemBackground)
+                .frame(height: 160)
+                .accessibilityHidden(true)
+        }
+    }
+
+    /// Padding keeps a control at least about 44 points tall and lets the label grow with Dynamic Type.
+    func minimumTapTarget() -> some View {
+        padding(.vertical, 12)
+            .padding(.horizontal, 4)
+            .contentShape(Rectangle())
+    }
+}
 
 // MARK: Navigation
 
@@ -76,14 +110,17 @@ struct DeviceRow: View {
                         .font(.subheadline.weight(.semibold))
                 }
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(device.name).font(.body.weight(.semibold))
+                    Text(device.name)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     if favorites.contains(FavoriteKey.device(device.id)) {
                         FavoriteMark()
                     }
                 }
                 Text([device.category, store.companyName(device.company), device.releasedText].joined(separator: ", "))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
@@ -101,14 +138,17 @@ struct CompanyRow: View {
         NavigationLink(value: Route.company(company.id)) {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(company.name).font(.body.weight(.semibold))
+                    Text(company.name)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     if favorites.contains(FavoriteKey.company(company.id)) {
                         FavoriteMark()
                     }
                 }
                 Text("Founded \(company.founded.nonEmpty ?? notDocumented), \(count) \(count == 1 ? "product" : "products")")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
@@ -125,14 +165,17 @@ struct OSRow: View {
         NavigationLink(value: Route.os(os.id)) {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(os.name).font(.body.weight(.semibold))
+                    Text(os.name)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                     if favorites.contains(FavoriteKey.os(os.id)) {
                         FavoriteMark()
                     }
                 }
                 Text("\(store.companyName(os.company)), \(os.versions.count) versions listed")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
@@ -144,7 +187,7 @@ struct OSRow: View {
 struct FavoriteMark: View {
     var body: some View {
         Image(systemName: "star.fill")
-            .imageScale(.small)
+            .font(.body)
             .accessibilityLabel("Favorite")
     }
 }
@@ -163,10 +206,12 @@ struct FavoriteButton: View {
         Button {
             favorites.toggle(key)
         } label: {
-            Label("Favorite", systemImage: isOn ? "star.fill" : "star")
+            Text(isOn ? "★ Favorite" : "☆ Favorite")
+                .font(.body)
         }
         .accessibilityLabel("Favorite")
         .accessibilityAddTraits(isOn ? .isSelected : [])
+        .buttonStyle(.plain)
         .accessibilityHint(isOn ? "Removes \(name) from Favorites." : "Adds \(name) to Favorites.")
     }
 }
@@ -185,13 +230,14 @@ struct CompareButton: View {
                 : "Added \(device.name) to Compare. \(compare.ids.count) of \(CompareStore.capacity) picked."
             AccessibilityNotification.Announcement(message).post()
         } label: {
-            Label(isIn ? "Remove from Compare" : "Add to Compare",
-                  systemImage: isIn ? "minus.circle" : "plus.circle")
+            Text(isIn ? "Remove from Compare" : "Add to Compare")
+                .font(.body)
         }
         .disabled(!isIn && compare.isFull)
         .accessibilityHint(!isIn && compare.isFull
                            ? "Compare already has three devices. Remove one in the Compare tab first."
                            : (isIn ? "Takes \(device.name) out of the comparison." : "Puts \(device.name) in the Compare tab, next to up to two other devices."))
+        .buttonStyle(.plain)
     }
 }
 
@@ -199,14 +245,30 @@ struct CompareButton: View {
 struct ShareTextButton: View {
     let title: String
     let text: String
+    @State private var showShare = false
 
     var body: some View {
-        ShareLink(item: TextFileExport(fileName: TextExporter.fileName(title), text: text),
-                  preview: SharePreview("\(title), plain text")) {
-            Label("Share as TXT", systemImage: "square.and.arrow.up")
+        Button {
+            showShare = true
+        } label: {
+            Text("Share as TXT")
+                .font(.body)
         }
+        .buttonStyle(.plain)
         .accessibilityHint("Shares or saves this entry as a plain text file.")
+        .sheet(isPresented: $showShare) {
+            ActivityShare(items: [text])
+        }
     }
+}
+
+/// System share sheet for a plain-text entry. The button itself stays a text label so Dynamic Type can scale it.
+private struct ActivityShare: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
 // MARK: Detail building blocks
@@ -225,6 +287,8 @@ struct DetailSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.title2.weight(.bold))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             content
         }
@@ -247,11 +311,24 @@ struct BodyText: View {
 struct LabeledFact: View {
     let label: String
     let value: String
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var ink: Color { colorScheme == .dark ? .white : .black }
+    private var paper: Color { colorScheme == .dark ? .black : .white }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.subheadline.weight(.semibold))
-            Text(value).font(.body).fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.body.weight(.semibold))
+                .foregroundColor(ink)
+                .padding(2)
+                .background(paper)
+            Text(value)
+                .font(.body)
+                .foregroundColor(ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(2)
+                .background(paper)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
@@ -293,6 +370,7 @@ struct EntryLinks: View {
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .minimumTapTarget()
                 }
             }
         }
@@ -312,8 +390,10 @@ struct SourceList: View {
                         Link(destination: url) {
                             Text("Source \(i + 1): \(url.host ?? source)")
                                 .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityHint("Opens \(source) in your web browser.")
+                        .minimumTapTarget()
                     } else {
                         BodyText("Source \(i + 1): \(source)")
                     }

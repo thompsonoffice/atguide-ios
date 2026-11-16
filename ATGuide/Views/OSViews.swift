@@ -10,6 +10,8 @@ struct OSHistoryListView: View {
             } header: {
                 Text("\(store.osHistories.count) operating system and software version histories.")
                     .textCase(nil)
+                    .foregroundStyle(.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
         .navigationTitle("OS History")
@@ -33,16 +35,15 @@ struct OSDetailView: View {
                         .accessibilityAddTraits(.isHeader)
                     Text("\(companyName), \(os.versions.count) versions listed")
                         .font(.title3)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
                     NavigationLink(value: Route.company(os.company)) {
                         Text("About \(companyName)")
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 16) { actionButtons }
-                        VStack(alignment: .leading, spacing: 12) { actionButtons }
-                    }
-                    .buttonStyle(.bordered)
-                    .padding(.top, 4)
+                    .minimumTapTarget()
+                    VStack(alignment: .leading, spacing: 12) { actionButtons }
+                        .padding(.top, 4)
                 }
 
                 DetailSection("Overview") {
@@ -56,7 +57,8 @@ struct OSDetailView: View {
                     ForEach(Array(os.versions.enumerated()), id: \.offset) { _, v in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(v.name)
-                                .font(.headline)
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(.primary)
                                 .accessibilityAddTraits(.isHeader)
                             LabeledFact(label: "Released", value: v.released.nonEmpty ?? notDocumented)
                             LabeledFact(label: "Notes", value: v.notes.nonEmpty ?? notDocumented)
@@ -73,7 +75,9 @@ struct OSDetailView: View {
                         NavigationLink(value: Route.device(d.id)) {
                             Text("\(d.name) (\(store.companyName(d.company)), \(d.releasedText))")
                                 .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
+                        .minimumTapTarget()
                     }
                 }
 
@@ -89,6 +93,8 @@ struct OSDetailView: View {
             .frame(maxWidth: 800, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .font(.body)
+        .aboveTabBar()
         .navigationTitle(os.name)
         .inlineTitle()
         .onAppear { recents.record(FavoriteKey.os(os.id)) }

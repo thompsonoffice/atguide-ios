@@ -1,4 +1,24 @@
 import SwiftUI
+import UIKit
+
+/// One screen of text-size choices. Choosing one returns to Settings.
+private struct TextSizeChoices: View {
+    @Binding var textSize: TextSizeOption
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        List(TextSizeOption.allCases) { option in
+            Button(option.title) {
+                textSize = option
+                dismiss()
+            }
+            .font(.body)
+            .foregroundColor(.primary)
+            .accessibilityAddTraits(textSize == option ? .isSelected : [])
+        }
+        .navigationTitle("Text size")
+    }
+}
 
 /// Text size choices. "Use iPhone setting" follows Settings > Accessibility > Display and Text Size.
 enum TextSizeOption: String, CaseIterable, Identifiable {
@@ -55,33 +75,73 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Text size", selection: $textSize) {
-                    ForEach(TextSizeOption.allCases) { Text($0.title).tag($0) }
+                NavigationLink {
+                    TextSizeChoices(textSize: $textSize)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Text size").font(.body).foregroundColor(.primary)
+                        Text(textSize.title).font(.body).foregroundColor(.primary)
+                    }
                 }
-                .pickerStyle(.navigationLink)
                 Text("Sample: The Braille 'n Speak was introduced at the 1987 NFB convention.")
                     .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityLabel("Text size sample. The Braille 'n Speak was introduced at the 1987 NFB convention.")
             } header: {
                 SectionHeader("Text")
             } footer: {
                 Text("Every screen uses Dynamic Type. Use iPhone setting follows Settings, Accessibility, Display and Text Size.")
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Section {
-                Button("Clear Recently Viewed (\(recents.keys.count))", role: .destructive) { recents.removeAll() }
-                    .disabled(recents.keys.isEmpty)
-                Button("Clear Comparison (\(compare.ids.count))", role: .destructive) { compare.removeAll() }
-                    .disabled(compare.ids.isEmpty)
-                Button("Remove All Favorites (\(favorites.keys.count))", role: .destructive) { confirmFavorites = true }
-                    .disabled(favorites.keys.isEmpty)
+                if recents.keys.isEmpty {
+                    Text("No recently viewed entries.")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Button("Clear Recently Viewed (\(recents.keys.count))", role: .destructive) { recents.removeAll() }
+                        .font(.body)
+                        .foregroundStyle(Color.destructiveText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if compare.ids.isEmpty {
+                    Text("Nothing picked for comparison.")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Button("Clear Comparison (\(compare.ids.count))", role: .destructive) { compare.removeAll() }
+                        .font(.body)
+                        .foregroundStyle(Color.destructiveText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if favorites.keys.isEmpty {
+                    Text("No favorites yet.")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Button("Remove All Favorites (\(favorites.keys.count))", role: .destructive) { confirmFavorites = true }
+                        .font(.body)
+                        .foregroundStyle(Color.destructiveText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             } header: {
                 SectionHeader("Saved on This Device")
             } footer: {
                 Text("Favorites, recently viewed entries and the comparison are stored only on this iPhone. Nothing is sent anywhere.")
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .navigationTitle("Settings")
+        .font(.body)
+        .aboveTabBar()
         .confirmationDialog("Remove all \(favorites.keys.count) favorites?", isPresented: $confirmFavorites, titleVisibility: .visible) {
             Button("Remove All Favorites", role: .destructive) { favorites.removeAll() }
             Button("Cancel", role: .cancel) {}

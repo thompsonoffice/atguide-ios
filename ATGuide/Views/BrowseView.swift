@@ -46,6 +46,8 @@ struct BrowseView: View {
                 }
             }
             .navigationTitle("ATGuide")
+            .font(.body)
+            .aboveTabBar()
             .atguideDestinations()
         }
     }
@@ -60,10 +62,13 @@ struct LabeledCountRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.body.weight(.semibold))
+            Text(title)
+                .font(.body.weight(.semibold))
+                .fixedSize(horizontal: false, vertical: true)
             Text("\(count) \(count == 1 ? noun : plural)")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
@@ -83,6 +88,8 @@ struct CategoryView: View {
             } header: {
                 Text("\(list.count) \(list.count == 1 ? "entry" : "entries"), oldest first.")
                     .textCase(nil)
+                    .foregroundStyle(.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
         .navigationTitle(category)
@@ -99,6 +106,8 @@ struct CompaniesListView: View {
             } header: {
                 Text("\(store.companies.count) companies. Choose one to see its history and product catalog.")
                     .textCase(nil)
+                    .foregroundStyle(.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
         .navigationTitle("Companies")
@@ -133,7 +142,7 @@ struct RecentsView: View {
         List {
             if keys.isEmpty {
                 Text("Nothing viewed yet. Entries you open appear here, newest first.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
             } else {
                 Section {
                     ForEach(keys, id: \.self) { key in
@@ -147,7 +156,10 @@ struct RecentsView: View {
                             }
                     }
                 } header: {
-                    Text("\(keys.count) entries, newest first. Kept on this device only.").textCase(nil)
+                    Text("\(keys.count) entries, newest first. Kept on this device only.")
+                        .textCase(nil)
+                        .foregroundStyle(.primary)
+                        .accessibilityAddTraits(.isHeader)
                 }
                 Section {
                     Button("Clear Recently Viewed", role: .destructive) { recents.removeAll() }

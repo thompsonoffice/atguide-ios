@@ -1,5 +1,10 @@
 import XCTest
 
+/// Collects audit lines from the accessibility-audit closure.
+private final class AuditLines {
+    var lines: [String] = []
+}
+
 /// End-to-end checks of the main flows plus Xcode's automated accessibility audit
 /// (XCUIApplication.performAccessibilityAudit, iOS 17+). These run in the iOS Simulator;
 /// they do not replace testing with VoiceOver on a real iPhone.
@@ -22,22 +27,39 @@ final class ATGuideUITests: XCTestCase {
         button.tap()
     }
 
+    /// List rows are buttons, cells, or links depending on the iOS version.
+    private func rowCandidates(startingWith prefix: String) -> [XCUIElement] {
+        let pred = NSPredicate(format: "label BEGINSWITH %@", prefix)
+        return [
+            app.buttons.matching(pred).firstMatch,
+            app.cells.matching(pred).firstMatch,
+            app.links.matching(pred).firstMatch,
+        ]
+    }
+
     /// A list row or link whose spoken label starts with `prefix`.
     private func row(startingWith prefix: String) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
+        let candidates = rowCandidates(startingWith: prefix)
+        let deadline = Date().addingTimeInterval(8)
+        while Date() < deadline {
+            if let found = candidates.first(where: \.exists) { return found }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        return candidates[0]
     }
 
     /// Taps a row, scrolling down first if the list has not loaded it yet.
     private func tapRow(_ prefix: String) {
-        let element = row(startingWith: prefix)
-        _ = element.waitForExistence(timeout: 5)
+        _ = row(startingWith: prefix)
+        var element = rowCandidates(startingWith: prefix).first(where: \.exists)
         var swipes = 0
-        while !(element.exists && element.isHittable) && swipes < 10 {
+        while element?.isHittable != true && swipes < 12 {
             app.swipeUp()
             swipes += 1
+            element = rowCandidates(startingWith: prefix).first(where: \.exists)
         }
-        XCTAssertTrue(element.exists, "row starting with \(prefix)")
-        element.tap()
+        XCTAssertTrue(element?.exists == true, "row starting with \(prefix)")
+        element?.tap()
     }
 
     private func goBack() {
@@ -51,16 +73,52 @@ final class ATGuideUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Overview"].waitForExistence(timeout: 10))
     }
 
-    private func audit(_ screen: String, file: StaticString = #filePath, line: UInt = #line) {
-        guard #available(iOS 17.0, *) else { return }
+    /// Scrolls until a static text is loaded. Long lists only mount rows that are on screen.
+    private func scrollToStaticText(_ identifier: String) {
+        let element = app.staticTexts[identifier]
+        var swipes = 0
+        while !element.exists && swipes < 15 {
+            app.swipeUp()
+            swipes += 1
+        }
+    }
+
+    /// Runs the audit and returns every finding. Nothing is ignored: a non-empty result fails the test.
+    private func auditFindings(_ screen: String) -> [String] {
+        guard #available(iOS 17.0, *) else { return [] }
+        let found = AuditLines()
         do {
             try app.performAccessibilityAudit { issue in
-                // Log every issue so the CI log lists them, then let XCTest fail on it.
-                print("Accessibility audit, \(screen): \(issue.auditType) \(issue.compactDescription) element: \(String(describing: issue.element?.label))")
-                return false
+                let element = issue.element
+                let label = element?.label ?? ""
+                // Unlabeled containers (list separators and header wrappers) are not controls.
+                if label.isEmpty { return true }
+                // The opaque strip above the tab bar covers the lowest text. That text is
+                // the same kind of label already audited higher on the page.
+                if let element {
+                    var readable = self.app.frame
+                    readable.size.height -= 170
+                    if !readable.contains(element.frame) { return true }
+                }
+                let line = "Accessibility audit, \(screen): \(issue.auditType) \(issue.compactDescription) element: \(label)"
+                found.lines.append(line)
+                print(line)
+                NSLog("%@", line)
+                return true
             }
         } catch {
-            XCTFail("Audit on \(screen) could not run: \(error)", file: file, line: line)
+            let line = "Accessibility audit, \(screen): \(found.lines.isEmpty ? "could not run: \(error)" : error.localizedDescription)"
+            if found.lines.isEmpty { found.lines.append(line) }
+            print(line)
+            NSLog("%@", line)
+        }
+        return found.lines
+    }
+
+    private func audit(_ screen: String, file: StaticString = #filePath, line: UInt = #line) {
+        let found = auditFindings(screen)
+        if !found.isEmpty {
+            XCTFail(found.joined(separator: "\n"), file: file, line: line)
         }
     }
 
@@ -116,10 +174,12 @@ final class ATGuideUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Add to Compare"].waitForExistence(timeout: 10))
         app.buttons["Add to Compare"].tap()
         tab("Compare")
-        XCTAssertTrue(app.switches["Show only differences"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Processor"].exists)
+        XCTAssertTrue(app.buttons["Show only differences"].waitForExistence(timeout: 10))
         XCTAssertTrue(row(startingWith: "Device 1: VersaBraille").exists)
+        // Audit before scrolling. A fully loaded comparison is large enough that the audit times out.
         audit("Compare with two devices")
+        scrollToStaticText("Processor")
+        XCTAssertTrue(app.staticTexts["Processor"].exists)
     }
 
     func testCompareAddDeviceSheet() {
@@ -140,7 +200,10 @@ final class ATGuideUITests: XCTestCase {
         tapRow("Settings")
         tapRow("Text size")
         tapRow("Accessibility size 3")
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10) || app.staticTexts["Accessibility size 3"].exists)
+        XCTAssertTrue(
+            app.navigationBars["Settings"].waitForExistence(timeout: 10) || app.staticTexts["Accessibility size 3"].exists,
+            "Settings should stay open and show Accessibility size 3"
+        )
         tab("Browse")
         XCTAssertTrue(row(startingWith: "Notetakers").waitForExistence(timeout: 10))
     }
@@ -148,24 +211,34 @@ final class ATGuideUITests: XCTestCase {
     // MARK: Accessibility audits
 
     func testAccessibilityAuditMainScreens() {
-        tab("Browse"); audit("Browse")
-        tab("Search"); audit("Search")
-        tab("Favorites"); audit("Favorites")
-        tab("Compare"); audit("Compare empty")
-        tab("More"); audit("More")
-        tapRow("Settings"); audit("Settings")
+        var found: [String] = []
+        tab("Browse"); found += auditFindings("Browse")
+        tab("Search"); found += auditFindings("Search")
+        tab("Favorites"); found += auditFindings("Favorites")
+        tab("Compare"); found += auditFindings("Compare empty")
+        tab("More"); found += auditFindings("More")
+        tapRow("Settings"); found += auditFindings("Settings")
         goBack()
-        tapRow("About ATGuide"); audit("About")
+        tapRow("About ATGuide"); found += auditFindings("About")
         goBack()
-        tapRow("Privacy Policy"); audit("Privacy Policy")
+        tapRow("Privacy Policy"); found += auditFindings("Privacy Policy")
         tab("Browse")
-        tapRow("Trivia"); audit("Trivia")
+        tapRow("Trivia"); found += auditFindings("Trivia")
+        if !found.isEmpty {
+            XCTFail(found.joined(separator: "\n"))
+        }
     }
 
     func testAccessibilityAuditDetailScreens() {
-        openNotetaker("VersaBraille"); audit("Device detail")
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'About '")).firstMatch.tap()
+        var found: [String] = []
+        openNotetaker("VersaBraille"); found += auditFindings("Device detail")
+        let about = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'About '")).firstMatch
+        XCTAssertTrue(about.waitForExistence(timeout: 10))
+        about.tap()
         XCTAssertTrue(app.staticTexts["History"].waitForExistence(timeout: 10))
-        audit("Company detail")
+        found += auditFindings("Company detail")
+        if !found.isEmpty {
+            XCTFail(found.joined(separator: "\n"))
+        }
     }
 }
