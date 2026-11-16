@@ -1,0 +1,135 @@
+# Captures 6.9-inch iPhone App Store screenshots (1320x2868 or 1290x2796)
+# from an iPhone 16 Pro Max-class simulator. Does not sign, upload, or
+# change app behavior. Intended to run from this branch via workflow_dispatch
+# or a pull request; do not merge unless we want this workflow on main.
+name: App Store screenshots
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/app-store-screenshots.yml"
+      - "ATGuideUITests/AppStoreScreenshotTests.swift"
+      - "scripts/pick_screenshot_simulator.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-store-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Use the newest installed Xcode
+        run: |
+          XCODE=$(python3 scripts/select_xcode.py)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+          xcrun simctl list devicetypes | grep -i "iPhone" || true
+          xcrun simctl list runtimes available || true
+
+      - name: Generate the Xcode project
+        run: |
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew install xcodegen xcbeautify
+          xcodegen generate
+
+      - name: Create or pick a Pro Max simulator
+        id: sim
+        run: |
+          set -o pipefail
+          if UDID=$(xcrun simctl list devices available -j | python3 scripts/pick_screenshot_simulator.py); then
+            echo "Found existing Pro Max simulator $UDID"
+          else
+            echo "No Pro Max simulator yet; creating one"
+            UDID=$(python3 scripts/pick_screenshot_simulator.py --create)
+          fi
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl list devices | grep "$UDID"
+
+      - name: Boot simulator and set status bar
+        run: |
+          set -e
+          UDID="${{ steps.sim.outputs.udid }}"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          # Light appearance, English, full bars at 9:41. Don't fail the job if a flag is unrecognized.
+          xcrun simctl ui "$UDID" appearance light || true
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" \
+            --dataNetwork wifi \
+            --wifiMode active \
+            --wifiBars 3 \
+            --cellularMode active \
+            --cellularBars 4 \
+            --operatorName '' \
+            --batteryState charged \
+            --batteryLevel 100 || true
+          xcrun simctl list devices | grep "$UDID"
+
+      - name: Capture screenshots
+        env:
+          APP_STORE_SCREENSHOTS: "1"
+          SCREENSHOT_DIR: ${{ github.workspace }}/screenshots
+        run: |
+          set -o pipefail
+          mkdir -p "$SCREENSHOT_DIR" build
+          xcodebuild test \
+            -project ATGuide.xcodeproj \
+            -scheme ATGuide \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -only-testing:ATGuideUITests/AppStoreScreenshotTests \
+            -resultBundlePath build/ATSpotlight-screenshots.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=- \
+            2>&1 | tee build/xcodebuild.log | xcbeautify --renderer github-actions
+          echo "Screenshots captured:"
+          ls -la "$SCREENSHOT_DIR"
+
+      - name: Verify PNG dimensions
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import struct, sys
+          from pathlib import Path
+          root = Path("screenshots")
+          files = sorted(root.glob("*.png")) if root.exists() else []
+          accepted = {(1320, 2868), (1290, 2796)}
+          if not files:
+              print("No PNG files in screenshots/")
+              sys.exit(1)
+          bad = False
+          for path in files:
+              data = path.read_bytes()
+              if data[:8] != b"\x89PNG\r\n\x1a\n":
+                  print(f"{path.name}: not a PNG")
+                  bad = True
+                  continue
+              width, height = struct.unpack(">II", data[16:24])
+              ok = (width, height) in accepted
+              print(f"{path.name}: {width}x{height} {'OK' if ok else 'NOT an accepted 6.9-inch size'}")
+              if not ok:
+                  bad = True
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atspotlight-app-store-screenshots
+          path: |
+            screenshots/*.png
+            build/xcodebuild.log
+          if-no-files-found: warn
+          retention-days: 14
