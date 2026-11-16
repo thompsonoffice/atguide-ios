@@ -62,9 +62,6 @@ struct CompareView: View {
                         }
                         .accessibilityAddTraits(differencesOnly ? .isSelected : [])
                         .accessibilityHint("Hides facts that are the same for every picked device.")
-                        Text("\(shown.count) of \(rows.count) facts shown.")
-                            .font(.body)
-                            .foregroundStyle(.primary)
                     }
                     ForEach(shown) { row in
                         Section {
@@ -83,16 +80,24 @@ struct CompareView: View {
             }
             .navigationTitle("Compare")
             .font(.body)
-            .safeAreaInset(edge: .bottom) {
-                if !compare.isFull {
-                    Button("Add Device") { showingPicker = true }
-                        .font(.body)
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .background(Color(uiColor: .systemBackground))
-                        .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
+            .safeAreaInset(edge: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    if picked.count >= 2 {
+                        Text("\(shown.count) of \(rows.count) facts shown.")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                    if !compare.isFull {
+                        Button("Add Device") { showingPicker = true }
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .buttonStyle(.plain)
+                            .accessibilityHint("\(compare.ids.count) of \(CompareStore.capacity) devices picked.")
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color(uiColor: .systemBackground))
             }
             .atguideDestinations()
             .sheet(isPresented: $showingPicker) {

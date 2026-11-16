@@ -311,20 +311,24 @@ struct BodyText: View {
 struct LabeledFact: View {
     let label: String
     let value: String
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var ink: Color { colorScheme == .dark ? .white : .black }
+    private var paper: Color { colorScheme == .dark ? .black : .white }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(Color.ink)
+                .foregroundColor(ink)
             Text(value)
                 .font(.body)
-                .foregroundStyle(Color.ink)
+                .foregroundColor(ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 2)
-        .background(Color(uiColor: .systemBackground))
+        .background(paper)
         .accessibilityElement(children: .combine)
     }
 }

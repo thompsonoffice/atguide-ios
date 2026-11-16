@@ -54,9 +54,10 @@ struct FavoritesView: View {
                     }
                 }
             }
-            .safeAreaInset(edge: .bottom) {
+            .safeAreaInset(edge: .top) {
                 Button("Recently Viewed") { path.append(Route.recents) }
                     .font(.body)
+                    .foregroundColor(.primary)
                     .buttonStyle(.plain)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
