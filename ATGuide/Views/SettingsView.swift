@@ -1,6 +1,25 @@
 import SwiftUI
 import UIKit
 
+/// One screen of text-size choices. Choosing one returns to Settings.
+private struct TextSizeChoices: View {
+    @Binding var textSize: TextSizeOption
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        List(TextSizeOption.allCases) { option in
+            Button(option.title) {
+                textSize = option
+                dismiss()
+            }
+            .font(.body)
+            .foregroundColor(.primary)
+            .accessibilityAddTraits(textSize == option ? .isSelected : [])
+        }
+        .navigationTitle("Text size")
+    }
+}
+
 /// Text size choices. "Use iPhone setting" follows Settings > Accessibility > Display and Text Size.
 enum TextSizeOption: String, CaseIterable, Identifiable {
     case system, xSmall, small, medium, large, xLarge, xxLarge, xxxLarge,
@@ -57,13 +76,7 @@ struct SettingsView: View {
         Form {
             Section {
                 NavigationLink {
-                    List(TextSizeOption.allCases) { option in
-                        Button(option.title) { textSize = option }
-                            .font(.body)
-                            .foregroundColor(.primary)
-                            .accessibilityAddTraits(textSize == option ? .isSelected : [])
-                    }
-                    .navigationTitle("Text size")
+                    TextSizeChoices(textSize: $textSize)
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Text size").font(.body).foregroundColor(.primary)
