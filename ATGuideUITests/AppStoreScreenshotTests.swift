@@ -61,8 +61,8 @@ final class AppStoreScreenshotTests: XCTestCase {
         // Add devices from the Compare tab so this does not depend on Browse
         // still being on a category or detail page after the earlier shots.
         tab("Compare")
-        addDeviceToCompare("VersaBraille,")
-        addDeviceToCompare("BrailleNote Touch,")
+        addDeviceToCompare("VersaBraille,", expectPrefix: "Device 1: VersaBraille")
+        addDeviceToCompare("BrailleNote Touch,", expectPrefix: "Device 2: BrailleNote Touch")
         XCTAssertTrue(app.buttons["Show only differences"].waitForExistence(timeout: 10))
         settle()
         try capture("05-compare")
@@ -146,12 +146,14 @@ final class AppStoreScreenshotTests: XCTestCase {
         return candidates[0]
     }
 
+    /// Taps a row, scrolling down only. Alternating swipeDown was unloading
+    /// lazy list rows (BrailleNote Touch sits near the end of Notetakers).
     private func tapRow(_ prefix: String) {
         _ = row(startingWith: prefix)
         var element = rowCandidates(startingWith: prefix).first(where: \.exists)
         var swipes = 0
-        while element?.isHittable != true && swipes < 16 {
-            if swipes % 2 == 0 { app.swipeUp() } else { app.swipeDown() }
+        while element?.isHittable != true && swipes < 20 {
+            app.swipeUp()
             swipes += 1
             element = rowCandidates(startingWith: prefix).first(where: \.exists)
         }
@@ -159,7 +161,7 @@ final class AppStoreScreenshotTests: XCTestCase {
         element?.tap()
     }
 
-    private func addDeviceToCompare(_ prefix: String) {
+    private func addDeviceToCompare(_ prefix: String, expectPrefix: String) {
         let add = app.buttons["Add Device"]
         XCTAssertTrue(add.waitForExistence(timeout: 10), "Add Device")
         add.tap()
@@ -168,7 +170,7 @@ final class AppStoreScreenshotTests: XCTestCase {
         field.tap()
         field.typeText(String(prefix.trimmingCharacters(in: CharacterSet(charactersIn: ","))))
         tapRow(prefix)
-        // Back on the compare list, the first device row should exist.
+        XCTAssertTrue(row(startingWith: expectPrefix).waitForExistence(timeout: 10), expectPrefix)
         settle()
     }
 
