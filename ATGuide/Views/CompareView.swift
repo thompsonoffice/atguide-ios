@@ -79,6 +79,7 @@ struct CompareView: View {
                             Text(differencesOnly ? "Showing only differences" : "Show only differences")
                                 .font(.body)
                                 .foregroundColor(.primary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .buttonStyle(.plain)
                         .accessibilityAddTraits(differencesOnly ? .isSelected : [])
