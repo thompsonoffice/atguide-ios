@@ -14,8 +14,9 @@ for runtime, items in devices.items():
         name = d["name"]
         if not name.startswith("iPhone"):
             continue
-        plain = 1 if re.fullmatch(r"iPhone \d+( Pro)?", name) else 0
-        key = (version, plain, name)
+        # Prefer Pro Max (6.9-inch App Store screenshots: 1320x2868 or 1290x2796).
+        rank = 3 if re.fullmatch(r"iPhone \d+ Pro Max", name) else 2 if re.fullmatch(r"iPhone \d+ Pro", name) else 1
+        key = (version, rank, name)
         if best is None or key > best[0]:
             best = (key, d["udid"])
 if best is None:
