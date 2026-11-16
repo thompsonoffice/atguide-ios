@@ -1,8 +1,8 @@
 import XCTest
 
-/// Captures 6.9-inch App Store screenshots. These tests are skipped unless
-/// APP_STORE_SCREENSHOTS=1 is set in the test-runner environment, so regular
-/// CI is unchanged. They do not change app behavior.
+/// Captures 6.9-inch App Store screenshots as XCTest attachments (and PNG files
+/// when SCREENSHOT_DIR is set). Set APP_STORE_SCREENSHOTS=0 to skip.
+/// Does not change app behavior.
 final class AppStoreScreenshotTests: XCTestCase {
     private var app: XCUIApplication!
     private var outputDirectory: URL!
@@ -10,9 +10,11 @@ final class AppStoreScreenshotTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         let env = ProcessInfo.processInfo.environment
-        try XCTSkipUnless(
-            env["APP_STORE_SCREENSHOTS"] == "1",
-            "Screenshot tests run only when APP_STORE_SCREENSHOTS=1"
+        // On this branch the tests run during regular CI so screenshots land in the
+        // xcresult artifact. Set APP_STORE_SCREENSHOTS=0 to skip.
+        try XCTSkipIf(
+            env["APP_STORE_SCREENSHOTS"] == "0",
+            "Screenshot tests skipped because APP_STORE_SCREENSHOTS=0"
         )
         continueAfterFailure = false
         let path = env["SCREENSHOT_DIR"] ?? FileManager.default.temporaryDirectory

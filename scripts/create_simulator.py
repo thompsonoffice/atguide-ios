@@ -37,7 +37,7 @@ def main():
         name = item.get("name", "")
         if not name.startswith("iPhone"):
             continue
-        rank = 2 if re.fullmatch(r"iPhone \d+ Pro", name) else 1 if name.startswith("iPhone") else 0
+        rank = 3 if re.fullmatch(r"iPhone \d+ Pro Max", name) else 2 if re.fullmatch(r"iPhone \d+ Pro", name) else 1 if name.startswith("iPhone") else 0
         preferred.append((rank, name, item["identifier"]))
     if not preferred:
         sys.exit("No iPhone simulator device type installed")
