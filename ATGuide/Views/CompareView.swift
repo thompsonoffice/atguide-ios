@@ -87,6 +87,7 @@ struct CompareView: View {
                         Text("\(shown.count) of \(rows.count) facts shown.")
                             .font(.body)
                             .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     if !picked.isEmpty {
                         Button("Clear Comparison", role: .destructive) { compare.removeAll() }

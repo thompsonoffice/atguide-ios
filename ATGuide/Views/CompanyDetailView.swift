@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// A company's history, then its catalog grouped by type (category).
 struct CompanyDetailView: View {
@@ -16,8 +17,6 @@ struct CompanyDetailView: View {
                     .accessibilityAddTraits(.isHeader)
                 LabeledFact(label: "Founded", value: company.founded.nonEmpty ?? notDocumented)
                 LabeledFact(label: "Products listed", value: String(store.productCount(of: company.id)))
-                FavoriteButton(key: FavoriteKey.company(company.id), name: company.name)
-                ShareTextButton(title: "About " + company.name, text: TextExporter(store: store).text(for: company))
             }
             Section {
                 SectionHeader("History")
@@ -46,6 +45,15 @@ struct CompanyDetailView: View {
         .navigationTitle(company.name)
         .inlineTitle()
         .font(.body)
+        .safeAreaInset(edge: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                FavoriteButton(key: FavoriteKey.company(company.id), name: company.name)
+                ShareTextButton(title: "About " + company.name, text: TextExporter(store: store).text(for: company))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color(uiColor: .systemBackground))
+        }
         .aboveTabBar()
         .onAppear { recents.record(FavoriteKey.company(company.id)) }
     }
