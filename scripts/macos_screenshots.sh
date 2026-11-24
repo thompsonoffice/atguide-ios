@@ -15,6 +15,9 @@ fi
 
 mkdir -p "$OUT"
 
+# The GitHub-hosted runner does not include Pillow; we need it to pad 1280x684 windows to 1280x800.
+python3 -c "from PIL import Image" 2>/dev/null || python3 -m pip install --user --quiet Pillow
+
 capture() {
   local scene="$1"
   local name="$2"
