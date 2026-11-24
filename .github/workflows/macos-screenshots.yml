@@ -49,6 +49,7 @@ jobs:
       - name: Build a debug app for screenshots
         run: |
           set -o pipefail
+          mkdir -p build
           xcodebuild build \
             -project ATGuide.xcodeproj \
             -scheme ATGuideMac \
