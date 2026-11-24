@@ -63,9 +63,6 @@ struct MacBrowseList: View {
             }
         }
         .navigationTitle("ATGuide")
-        .onChange(of: selectedCategory) { _, name in
-            if let name { nav.sidebar = .browse }
-        }
     }
 
     /// Selection is either a saved-key or "cat:CategoryName".

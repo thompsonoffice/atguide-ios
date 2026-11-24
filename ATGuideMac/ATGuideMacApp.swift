@@ -55,7 +55,7 @@ struct ATGuideMacApp: App {
 
 /// Applies the text size chosen in Settings. "Use system setting" leaves Dynamic Type alone.
 struct MacRootView: View {
-    @AppStorage(MacTextSizeOption.storageKey) private var textSize: MacTextSizeOption = .system
+    @AppStorage(TextSizeOption.storageKey) private var textSize: TextSizeOption = .system
     @Environment(\.dynamicTypeSize) private var systemSize
     @EnvironmentObject private var nav: MacNavState
 

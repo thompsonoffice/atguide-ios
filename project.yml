@@ -68,6 +68,7 @@ targets:
     sources:
       - path: ATGuide/Model
       - path: ATGuide/App/UserState.swift
+      - path: ATGuide/App/TextSizeOption.swift
       - path: ATGuide/App/TextFileExport.swift
       - path: ATGuide/Resources
       - path: ATGuide/PrivacyInfo.xcprivacy
