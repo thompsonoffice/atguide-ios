@@ -5,10 +5,6 @@ name: Mac App Store upload
 
 on:
   workflow_dispatch:
-  # Temporary: lets this branch start the first upload. workflow_dispatch is
-  # only listed after the file exists on the default branch.
-  push:
-    branches: [macos-app-store]
 
 permissions:
   contents: read
