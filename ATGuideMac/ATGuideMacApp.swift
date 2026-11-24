@@ -23,20 +23,20 @@ struct ATGuideMacApp: App {
         _nav = StateObject(wrappedValue: nav)
         let loaded = Result { try ATGuideStore.loadBundled() }
         self.loaded = loaded
-        if case .success(let store) = loaded {
-            // Start immediately from init so CI does not depend on a visible window.
-            MacScreenshotRunner.schedule(nav: nav, store: store, compare: compare, favorites: favorites, recents: recents)
-        } else {
-            MacScreenshotRunner.scheduleFailedLaunch()
+        if case .success(let store) = loaded, let scene = ScreenshotLaunch.scene {
+            ScreenshotLaunch.apply(scene, nav: nav, store: store, compare: compare,
+                                   favorites: favorites, recents: recents)
         }
     }
 
     /// UI tests and screenshot runs start from a clean, separate store.
     private static func makeDefaults() -> UserDefaults {
         let args = ProcessInfo.processInfo.arguments
-        guard args.contains("-ATGuideUITesting") || args.contains("-ATGuideScreenshots"),
-              let suite = UserDefaults(suiteName: "ATGuideUITesting") else { return .standard }
-        suite.removePersistentDomain(forName: "ATGuideUITesting")
+        let testing = args.contains("-ATGuideUITesting")
+        guard testing || ScreenshotLaunch.isRequested else { return .standard }
+        let name = testing ? "ATGuideUITesting" : "ATGuideScreenshot"
+        guard let suite = UserDefaults(suiteName: name) else { return .standard }
+        suite.removePersistentDomain(forName: name)
         return suite
     }
 
@@ -52,6 +52,7 @@ struct ATGuideMacApp: App {
                     .environmentObject(nav)
                     .defaultAppStorage(defaults)
                     .frame(minWidth: 800, minHeight: 560)
+                    .onAppear { MacScreenshot.captureIfRequested() }
             case .failure(let error):
                 Text("ATGuide could not load its data. \(error.localizedDescription)")
                     .padding()
@@ -75,7 +76,6 @@ struct MacRootView: View {
         MacSplitView()
             .dynamicTypeSize(textSize.dynamicTypeSize ?? systemSize)
             .focusedSceneObject(nav)
-            .background(MacWindowSizer())
     }
 }
 
@@ -91,27 +91,6 @@ struct MacGoCommands: Commands {
                 }
                 .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: [.command])
             }
-        }
-    }
-}
-
-/// Sets a 1280×800 content size when taking App Store screenshots.
-private struct MacWindowSizer: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView(frame: .zero)
-        DispatchQueue.main.async {
-            guard ProcessInfo.processInfo.arguments.contains("-ATGuideScreenshots") else { return }
-            guard let window = view.window else { return }
-            window.setContentSize(NSSize(width: 1280, height: 800))
-            window.center()
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        guard ProcessInfo.processInfo.arguments.contains("-ATGuideScreenshots") else { return }
-        if let window = nsView.window, window.contentView?.bounds.size != NSSize(width: 1280, height: 800) {
-            window.setContentSize(NSSize(width: 1280, height: 800))
         }
     }
 }

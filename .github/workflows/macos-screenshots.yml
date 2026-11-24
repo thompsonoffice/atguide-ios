@@ -1,0 +1,76 @@
+# Builds an unsigned Debug Mac app and captures real-window App Store screenshots.
+# Run on the macos-app-store branch. Does not sign, upload, or submit.
+name: Mac screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [macos-app-store]
+    paths:
+      - ATGuideMac/**
+      - ATGuide/Model/**
+      - ATGuide/App/**
+      - ATGuide/Resources/**
+      - project.yml
+      - scripts/macos_screenshots.sh
+      - scripts/pad_mac_screenshot.py
+      - scripts/verify_mac_screenshots.py
+      - .github/workflows/macos-screenshots.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Use the newest installed Xcode
+        run: |
+          XCODE=$(python3 scripts/select_xcode.py)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Generate the Xcode project
+        run: |
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew install xcodegen xcbeautify
+          xcodegen generate
+
+      - name: Build a debug app for screenshots
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project ATGuide.xcodeproj \
+            -scheme ATGuideMac \
+            -configuration Debug \
+            -destination "platform=macOS,arch=arm64" \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=- \
+            2>&1 | tee build/xcodebuild-mac-shots.log | xcbeautify --renderer github-actions
+          test -d "build/dd/Build/Products/Debug/ATGuide.app"
+
+      - name: Capture real window screenshots
+        run: |
+          APP="build/dd/Build/Products/Debug/ATGuide.app"
+          mkdir -p build/mac-screenshots
+          scripts/macos_screenshots.sh "$APP" build/mac-screenshots
+
+      - name: Upload screenshots artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ATGuide-mac-screenshots
+          path: build/mac-screenshots
+          if-no-files-found: warn
