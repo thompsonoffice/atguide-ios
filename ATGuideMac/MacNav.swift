@@ -178,7 +178,7 @@ struct MacContentColumn: View {
     var body: some View {
         Group {
             switch nav.sidebar {
-            case .browse: MacBrowseList()
+            case .browse: MacBrowseSwitcher()
             case .search: MacSearchList()
             case .favorites: MacFavoritesList()
             case .compare: MacCompareList()
