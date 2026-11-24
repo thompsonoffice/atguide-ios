@@ -3,60 +3,66 @@ import SwiftUI
 
 /// Walks the main screens and writes 1280×800 (or another accepted Mac size) PNGs
 /// when the app is launched with -ATGuideScreenshots and -ATGuideScreenshotDir <path>.
+/// This runs from app init and uses ImageRenderer, so it does not need a visible window.
 enum MacScreenshotRunner {
     @MainActor
-    static func run(nav: MacNavState, store: ATGuideStore, compare: CompareStore) async {
-        let args = ProcessInfo.processInfo.arguments
-        guard args.contains("-ATGuideScreenshots") else { return }
-        guard let index = args.firstIndex(of: "-ATGuideScreenshotDir"),
-              args.indices.contains(index + 1) else {
-            NSLog("ATGuide screenshots: missing -ATGuideScreenshotDir")
-            return
-        }
-        let dir = URL(fileURLWithPath: args[index + 1], isDirectory: true)
+    static func schedule(nav: MacNavState, store: ATGuideStore, compare: CompareStore,
+                         favorites: FavoritesStore, recents: RecentsStore) {
+        guard let dir = screenshotDirectory() else { return }
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         try? "started".write(to: dir.appendingPathComponent("STARTED.txt"), atomically: true, encoding: .utf8)
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-
-        // Wait for the main window to exist.
-        var window: NSWindow?
-        for _ in 0..<50 {
-            window = NSApp.windows.first { $0.contentView != nil && $0.isVisible }
-            if window != nil { break }
-            try? await Task.sleep(nanoseconds: 100_000_000)
+        fputs("ATGuide screenshots: scheduled, writing to \(dir.path)\n", stderr)
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            await run(nav: nav, store: store, compare: compare, favorites: favorites, recents: recents, dir: dir)
         }
-        guard let window else {
-            try? "No window".write(to: dir.appendingPathComponent("ERROR.txt"), atomically: true, encoding: .utf8)
-            NSApp.terminate(nil)
-            return
-        }
-        window.setContentSize(NSSize(width: 1280, height: 800))
-        window.makeKeyAndOrderFront(nil)
-        try? await Task.sleep(nanoseconds: 400_000_000)
+    }
 
-        func snap(_ name: String) async {
-            await Self.snap(name, window: window, dir: dir)
+    @MainActor
+    static func scheduleFailedLaunch() {
+        guard let dir = screenshotDirectory() else { return }
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try? "data load failed".write(to: dir.appendingPathComponent("ERROR.txt"), atomically: true, encoding: .utf8)
+        NSApp.terminate(nil)
+    }
+
+    private static func screenshotDirectory() -> URL? {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-ATGuideScreenshots") else { return nil }
+        guard let index = args.firstIndex(of: "-ATGuideScreenshotDir"),
+              args.indices.contains(index + 1) else {
+            fputs("ATGuide screenshots: missing -ATGuideScreenshotDir\n", stderr)
+            return nil
+        }
+        return URL(fileURLWithPath: args[index + 1], isDirectory: true)
+    }
+
+    @MainActor
+    private static func run(nav: MacNavState, store: ATGuideStore, compare: CompareStore,
+                            favorites: FavoritesStore, recents: RecentsStore, dir: URL) async {
+        func shot(_ name: String) {
+            do {
+                try render(view: wrapped(MacSplitView(), nav: nav, store: store, compare: compare, favorites: favorites, recents: recents),
+                           to: dir.appendingPathComponent(name))
+            } catch {
+                fputs("ATGuide screenshots: failed \(name): \(error)\n", stderr)
+            }
         }
 
         nav.open(.browse)
-        try? await Task.sleep(nanoseconds: 400_000_000)
-        await snap("01-browse.png")
+        shot("01-browse.png")
 
         nav.openCategory = "Notetakers"
         nav.selection = nil
-        try? await Task.sleep(nanoseconds: 400_000_000)
-        await snap("02-notetakers.png")
+        shot("02-notetakers.png")
 
         nav.selection = .device("bntouch")
-        try? await Task.sleep(nanoseconds: 600_000_000)
-        await snap("03-braillenote-touch.png")
+        shot("03-braillenote-touch.png")
 
         compare.removeAll()
         for id in ["bntouch", "bns", "bnapex"] {
             if store.device(id) != nil { compare.add(id) }
         }
-        // If those IDs are missing, pick the first three notetakers.
         if compare.ids.count < 2 {
             for d in store.devices(inCategory: "Notetakers").prefix(3) {
                 compare.add(d.id)
@@ -64,50 +70,48 @@ enum MacScreenshotRunner {
         }
         nav.searchQuery = "BrailleNote"
         nav.open(.search)
-        try? await Task.sleep(nanoseconds: 700_000_000)
-        await snap("04-search.png")
+        shot("04-search.png")
 
         nav.open(.compare)
         nav.selection = nil
-        try? await Task.sleep(nanoseconds: 600_000_000)
-        await snap("05-compare.png")
+        shot("05-compare.png")
 
         nav.open(.about)
-        try? await Task.sleep(nanoseconds: 400_000_000)
-        await snap("06-about.png")
+        shot("06-about.png")
 
         try? "ok".write(to: dir.appendingPathComponent("DONE.txt"), atomically: true, encoding: .utf8)
+        fputs("ATGuide screenshots: done\n", stderr)
         NSApp.terminate(nil)
     }
 
-    private static func snap(_ name: String, window: NSWindow, dir: URL) async {
-        window.setContentSize(NSSize(width: 1280, height: 800))
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-        try? await Task.sleep(nanoseconds: 500_000_000)
-        do {
-            try capture(window: window, to: dir.appendingPathComponent(name))
-        } catch {
-            NSLog("ATGuide screenshots: failed \(name): \(error)")
-        }
+    @MainActor
+    private static func wrapped<V: View>(_ view: V, nav: MacNavState, store: ATGuideStore,
+                                         compare: CompareStore, favorites: FavoritesStore,
+                                         recents: RecentsStore) -> some View {
+        view
+            .environmentObject(store)
+            .environmentObject(favorites)
+            .environmentObject(recents)
+            .environmentObject(compare)
+            .environmentObject(nav)
+            .frame(width: 1280, height: 800)
     }
 
-    private static func capture(window: NSWindow, to url: URL) throws {
-        guard let view = window.contentView else { throw CocoaError(.fileWriteUnknown) }
-        view.layoutSubtreeIfNeeded()
-        let bounds = view.bounds
-        guard let cached = view.bitmapImageRepForCachingDisplay(in: bounds) else {
+    @MainActor
+    private static func render(view: some View, to url: URL) throws {
+        let renderer = ImageRenderer(content: view)
+        renderer.proposedSize = ProposedViewSize(width: 1280, height: 800)
+        renderer.scale = 1
+        guard let cgImage = renderer.cgImage else {
             throw CocoaError(.fileWriteUnknown)
         }
-        view.cacheDisplay(in: bounds, to: cached)
-        guard let cgImage = cached.cgImage else { throw CocoaError(.fileWriteUnknown) }
-        let final = Self.normalizedImage(cgImage)
+        let final = normalizedImage(cgImage)
         let rep = NSBitmapImageRep(cgImage: final)
         guard let data = rep.representation(using: .png, properties: [:]) else {
             throw CocoaError(.fileWriteUnknown)
         }
         try data.write(to: url, options: .atomic)
-        NSLog("ATGuide screenshots: wrote \(url.lastPathComponent) \(final.width)x\(final.height)")
+        fputs("ATGuide screenshots: wrote \(url.lastPathComponent) \(final.width)x\(final.height)\n", stderr)
     }
 
     /// Accepted Mac App Store sizes: 1280×800, 1440×900, 2560×1600, 2880×1800.
@@ -119,7 +123,6 @@ enum MacScreenshotRunner {
         let w = image.width
         let h = image.height
         if accepted.contains([w, h]) { return image }
-        // Prefer 2560×1600 when the capture is Retina-sized, otherwise 1280×800.
         let target = (w >= 2000 || h >= 1400)
             ? (width: 2560, height: 1600)
             : (width: 1280, height: 800)

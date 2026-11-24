@@ -1,6 +1,8 @@
 #!/bin/bash
 # Import Mac App Store signing certificates and the provisioning profile
 # into a temporary keychain on the GitHub Actions macOS runner.
+# The p12 files must be exported with OpenSSL -legacy (3DES + SHA1 MAC);
+# the OpenSSL 3 default AES/SHA256 MAC fails macOS security import.
 set -euo pipefail
 
 : "${MAC_DIST_P12:?}"

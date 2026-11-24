@@ -6,17 +6,29 @@ struct ATGuideMacApp: App {
     @StateObject private var favorites: FavoritesStore
     @StateObject private var recents: RecentsStore
     @StateObject private var compare: CompareStore
-    @StateObject private var nav = MacNavState()
+    @StateObject private var nav: MacNavState
     private let defaults: UserDefaults
     private let loaded: Result<ATGuideStore, Error>
 
     init() {
         let defaults = ATGuideMacApp.makeDefaults()
         self.defaults = defaults
-        _favorites = StateObject(wrappedValue: FavoritesStore(defaults: defaults))
-        _recents = StateObject(wrappedValue: RecentsStore(defaults: defaults))
-        _compare = StateObject(wrappedValue: CompareStore(defaults: defaults))
-        loaded = Result { try ATGuideStore.loadBundled() }
+        let favorites = FavoritesStore(defaults: defaults)
+        let recents = RecentsStore(defaults: defaults)
+        let compare = CompareStore(defaults: defaults)
+        let nav = MacNavState()
+        _favorites = StateObject(wrappedValue: favorites)
+        _recents = StateObject(wrappedValue: recents)
+        _compare = StateObject(wrappedValue: compare)
+        _nav = StateObject(wrappedValue: nav)
+        let loaded = Result { try ATGuideStore.loadBundled() }
+        self.loaded = loaded
+        if case .success(let store) = loaded {
+            // Start immediately from init so CI does not depend on a visible window.
+            MacScreenshotRunner.schedule(nav: nav, store: store, compare: compare, favorites: favorites, recents: recents)
+        } else {
+            MacScreenshotRunner.scheduleFailedLaunch()
+        }
     }
 
     /// UI tests and screenshot runs start from a clean, separate store.
@@ -58,15 +70,12 @@ struct MacRootView: View {
     @AppStorage(TextSizeOption.storageKey) private var textSize: TextSizeOption = .system
     @Environment(\.dynamicTypeSize) private var systemSize
     @EnvironmentObject private var nav: MacNavState
-    @EnvironmentObject private var store: ATGuideStore
-    @EnvironmentObject private var compare: CompareStore
 
     var body: some View {
         MacSplitView()
             .dynamicTypeSize(textSize.dynamicTypeSize ?? systemSize)
             .focusedSceneObject(nav)
             .background(MacWindowSizer())
-            .task { await MacScreenshotRunner.run(nav: nav, store: store, compare: compare) }
     }
 }
 
