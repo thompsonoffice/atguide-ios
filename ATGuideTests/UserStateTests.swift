@@ -1,5 +1,9 @@
 import XCTest
+#if canImport(ATGuideMac)
+@testable import ATGuideMac
+#else
 @testable import ATGuide
+#endif
 
 /// Favorites, recently viewed and compare picks, each against a throwaway UserDefaults suite.
 final class UserStateTests: XCTestCase {

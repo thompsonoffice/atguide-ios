@@ -1,5 +1,9 @@
 import XCTest
+#if canImport(ATGuideMac)
+@testable import ATGuideMac
+#else
 @testable import ATGuide
+#endif
 
 /// Checks the bundled ATGuide 2.0 data and the store's lookups, search, comparison and export.
 final class ATGuideDataTests: XCTestCase {

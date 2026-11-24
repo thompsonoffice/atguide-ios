@@ -5,3 +5,8 @@ DerivedData/
 .DS_Store
 *.p8
 xcuserdata/
+*.p12
+*.cer
+*.csr
+*.provisionprofile
+*.mobileprovision
