@@ -1,0 +1,157 @@
+# Archives, signs and uploads the Mac app as a .pkg to App Store Connect.
+# Also captures App Store screenshots from the built app.
+# Run by hand: Actions → "Mac App Store upload" → Run workflow.
+name: Mac App Store upload
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Use the newest installed Xcode
+        run: |
+          XCODE=$(python3 scripts/select_xcode.py)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Generate the Xcode project
+        run: |
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew install xcodegen xcbeautify
+          xcodegen generate
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild test \
+            -project ATGuide.xcodeproj \
+            -scheme ATGuideMac \
+            -destination "platform=macOS,arch=arm64" \
+            -only-testing:ATGuideMacTests \
+            -resultBundlePath build/ATGuideMac.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=- \
+            2>&1 | tee build/xcodebuild-mac-test.log | xcbeautify --renderer github-actions
+
+      - name: Build a debug app and capture screenshots
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project ATGuide.xcodeproj \
+            -scheme ATGuideMac \
+            -configuration Debug \
+            -destination "platform=macOS,arch=arm64" \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=- \
+            2>&1 | tee build/xcodebuild-mac-shots.log | xcbeautify --renderer github-actions
+          APP="build/dd/Build/Products/Debug/ATGuide.app"
+          test -d "$APP"
+          mkdir -p build/mac-screenshots
+          "$APP/Contents/MacOS/ATGuide" \
+            -ATGuideScreenshots \
+            -ATGuideScreenshotDir "$PWD/build/mac-screenshots" \
+            -ATGuideUITesting || true
+          if [ ! -f build/mac-screenshots/DONE.txt ]; then
+            echo "Screenshot run did not finish" >&2
+            ls -la build/mac-screenshots || true
+            exit 1
+          fi
+          python3 scripts/verify_mac_screenshots.py build/mac-screenshots
+          ls -la build/mac-screenshots
+
+      - name: Upload screenshots artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ATGuide-mac-screenshots
+          path: build/mac-screenshots
+          if-no-files-found: error
+
+      - name: Import Mac App Store signing materials
+        env:
+          MAC_DIST_P12: ${{ secrets.MAC_DIST_P12 }}
+          MAC_DIST_P12_PASSWORD: ${{ secrets.MAC_DIST_P12_PASSWORD }}
+          MAC_INSTALLER_P12: ${{ secrets.MAC_INSTALLER_P12 }}
+          MAC_INSTALLER_P12_PASSWORD: ${{ secrets.MAC_INSTALLER_P12_PASSWORD }}
+          MAC_PROVISIONING_PROFILE: ${{ secrets.MAC_PROVISIONING_PROFILE }}
+        run: bash scripts/import_mac_signing.sh
+
+      - name: Archive for the Mac App Store
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project ATGuide.xcodeproj \
+            -scheme ATGuideMac \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -archivePath build/ATGuideMac.xcarchive \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="3rd Party Mac Developer Application" \
+            PROVISIONING_PROFILE_SPECIFIER="Mac App Store com.thompsonoffice.atguide" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            2>&1 | tee build/xcodebuild-mac-archive.log | xcbeautify --renderer github-actions
+
+      - name: Export the signed package
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -o pipefail
+          mkdir -p build/export
+          sed "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" scripts/ExportOptions-mac-upload.plist > build/ExportOptions-mac.plist
+          xcodebuild -exportArchive \
+            -archivePath build/ATGuideMac.xcarchive \
+            -exportOptionsPlist build/ExportOptions-mac.plist \
+            -exportPath build/export
+          ls -la build/export
+          shopt -s nullglob
+          pkgs=(build/export/*.pkg)
+          if [ ${#pkgs[@]} -eq 0 ]; then
+            echo "No .pkg was exported" >&2
+            exit 1
+          fi
+          echo "PKG=${pkgs[0]}" >> "$GITHUB_ENV"
+
+      - name: Upload the package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ATGuide-mac-pkg
+          path: build/export
+          if-no-files-found: error
+
+      - name: Write the App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          printf '%s' "$ASC_KEY_P8" > "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          chmod 600 "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+
+      - name: Upload the package to App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcrun altool --upload-app --type osx --file "$PKG" \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Remove the key file
+        if: always()
+        run: rm -rf "$HOME/.appstoreconnect/private_keys" "$RUNNER_TEMP/mac_dist.p12" "$RUNNER_TEMP/mac_installer.p12" "$RUNNER_TEMP/atguide.provisionprofile" "$RUNNER_TEMP/macsign-kc-pass" || true

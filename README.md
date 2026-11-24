@@ -36,3 +36,11 @@ A native SwiftUI iPhone app (iOS 17+) of ATGuide 2.0, the assistive-technology e
 ## Not verified yet
 
 Real-device VoiceOver use, signing, TestFlight and App Review have not happened. The simulator audit catches many problems but does not replace testing with VoiceOver on an iPhone.
+
+## macOS App Store target
+
+A native macOS target (`ATGuideMac` in `project.yml`) ships the same ATGuide 2.0 catalog in a sidebar-and-detail layout, with the App Sandbox and Hardened Runtime on, for the Mac App Store. It uses the same bundle ID as the iPhone app (`com.thompsonoffice.atguide`) so both platforms share one listing and price.
+
+- Unit tests: the `macOS build and test` workflow, or `xcodegen generate && xcodebuild test -scheme ATGuideMac -destination 'platform=macOS'`.
+- Upload: the `Mac App Store upload` workflow (run by hand). It signs a `.pkg` with the Mac App Store certificates stored as repository secrets and uploads it to App Store Connect. It does not submit the version for review.
+
