@@ -15,8 +15,17 @@ fi
 
 mkdir -p "$OUT"
 
-# The GitHub-hosted runner does not include Pillow; we need it to pad 1280x684 windows to 1280x800.
-python3 -c "from PIL import Image" 2>/dev/null || python3 -m pip install --user --quiet Pillow
+# The GitHub-hosted runner does not include Pillow, and system pip is PEP 668 locked.
+# Use a throwaway venv so we can pad 1280x684 windows to 1280x800.
+PAD_PY=python3
+if ! python3 -c "from PIL import Image" 2>/dev/null; then
+  VENV="${TMPDIR:-/tmp}/atguide-shot-venv"
+  if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -c "from PIL import Image" 2>/dev/null; then
+    python3 -m venv "$VENV"
+    "$VENV/bin/pip" install --quiet Pillow
+  fi
+  PAD_PY="$VENV/bin/python"
+fi
 
 capture() {
   local scene="$1"
@@ -42,7 +51,7 @@ capture() {
     exit 1
   fi
   sips -g pixelWidth -g pixelHeight "$dest"
-  python3 "$HERE/pad_mac_screenshot.py" "$dest"
+  "$PAD_PY" "$HERE/pad_mac_screenshot.py" "$dest"
   sips -g pixelWidth -g pixelHeight "$dest"
 }
 
