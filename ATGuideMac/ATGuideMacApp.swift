@@ -58,13 +58,15 @@ struct MacRootView: View {
     @AppStorage(TextSizeOption.storageKey) private var textSize: TextSizeOption = .system
     @Environment(\.dynamicTypeSize) private var systemSize
     @EnvironmentObject private var nav: MacNavState
+    @EnvironmentObject private var store: ATGuideStore
+    @EnvironmentObject private var compare: CompareStore
 
     var body: some View {
         MacSplitView()
             .dynamicTypeSize(textSize.dynamicTypeSize ?? systemSize)
             .focusedSceneObject(nav)
             .background(MacWindowSizer())
-            .background(MacScreenshotDriver())
+            .task { await MacScreenshotRunner.run(nav: nav, store: store, compare: compare) }
     }
 }
 

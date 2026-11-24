@@ -3,20 +3,9 @@ import SwiftUI
 
 /// Walks the main screens and writes 1280×800 (or another accepted Mac size) PNGs
 /// when the app is launched with -ATGuideScreenshots and -ATGuideScreenshotDir <path>.
-struct MacScreenshotDriver: View {
-    @EnvironmentObject private var nav: MacNavState
-    @EnvironmentObject private var store: ATGuideStore
-    @EnvironmentObject private var compare: CompareStore
-
-    var body: some View {
-        Color.clear
-            .frame(width: 0, height: 0)
-            .accessibilityHidden(true)
-            .task { await runIfNeeded() }
-    }
-
+enum MacScreenshotRunner {
     @MainActor
-    private func runIfNeeded() async {
+    static func run(nav: MacNavState, store: ATGuideStore, compare: CompareStore) async {
         let args = ProcessInfo.processInfo.arguments
         guard args.contains("-ATGuideScreenshots") else { return }
         guard let index = args.firstIndex(of: "-ATGuideScreenshotDir"),
@@ -26,6 +15,9 @@ struct MacScreenshotDriver: View {
         }
         let dir = URL(fileURLWithPath: args[index + 1], isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try? "started".write(to: dir.appendingPathComponent("STARTED.txt"), atomically: true, encoding: .utf8)
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
 
         // Wait for the main window to exist.
         var window: NSWindow?
@@ -44,13 +36,7 @@ struct MacScreenshotDriver: View {
         try? await Task.sleep(nanoseconds: 400_000_000)
 
         func snap(_ name: String) async {
-            window.setContentSize(NSSize(width: 1280, height: 800))
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            do {
-                try capture(window: window, to: dir.appendingPathComponent(name))
-            } catch {
-                NSLog("ATGuide screenshots: failed \(name): \(error)")
-            }
+            await Self.snap(name, window: window, dir: dir)
         }
 
         nav.open(.browse)
@@ -94,7 +80,19 @@ struct MacScreenshotDriver: View {
         NSApp.terminate(nil)
     }
 
-    private func capture(window: NSWindow, to url: URL) throws {
+    private static func snap(_ name: String, window: NSWindow, dir: URL) async {
+        window.setContentSize(NSSize(width: 1280, height: 800))
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        do {
+            try capture(window: window, to: dir.appendingPathComponent(name))
+        } catch {
+            NSLog("ATGuide screenshots: failed \(name): \(error)")
+        }
+    }
+
+    private static func capture(window: NSWindow, to url: URL) throws {
         guard let view = window.contentView else { throw CocoaError(.fileWriteUnknown) }
         view.layoutSubtreeIfNeeded()
         let bounds = view.bounds
